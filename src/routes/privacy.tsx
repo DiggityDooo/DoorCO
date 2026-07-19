@@ -93,25 +93,33 @@ function PrivacyPage() {
             <tbody className="divide-y divide-border">
               <tr>
                 <td className="py-2 pr-3">Uploaded document (synthetic)</td>
-                <td className="py-2 pr-3 text-muted-foreground">Field extraction on the allowlist only.</td>
+                <td className="py-2 pr-3 text-muted-foreground">
+                  Field extraction on the allowlist only.
+                </td>
                 <td className="py-2 pr-3 text-muted-foreground">Browser memory</td>
                 <td className="py-2 text-muted-foreground">Session</td>
               </tr>
               <tr>
                 <td className="py-2 pr-3">Confirmed fields (income, HH size, dates)</td>
-                <td className="py-2 pr-3 text-muted-foreground">Populate calculation ledger and packet.</td>
+                <td className="py-2 pr-3 text-muted-foreground">
+                  Populate calculation ledger and packet.
+                </td>
                 <td className="py-2 pr-3 text-muted-foreground">Browser memory</td>
                 <td className="py-2 text-muted-foreground">Session</td>
               </tr>
               <tr>
                 <td className="py-2 pr-3">Activity log (actions only)</td>
-                <td className="py-2 pr-3 text-muted-foreground">Transparency into what happened this session.</td>
+                <td className="py-2 pr-3 text-muted-foreground">
+                  Transparency into what happened this session.
+                </td>
                 <td className="py-2 pr-3 text-muted-foreground">Browser memory</td>
                 <td className="py-2 text-muted-foreground">Session</td>
               </tr>
               <tr>
                 <td className="py-2 pr-3">Exported packet (PDF / ZIP)</td>
-                <td className="py-2 pr-3 text-muted-foreground">Renter-controlled handoff to a human reviewer.</td>
+                <td className="py-2 pr-3 text-muted-foreground">
+                  Renter-controlled handoff to a human reviewer.
+                </td>
                 <td className="py-2 pr-3 text-muted-foreground">Your device only</td>
                 <td className="py-2 text-muted-foreground">You control</td>
               </tr>
@@ -136,7 +144,10 @@ function PrivacyPage() {
             <li className="px-3 py-2 text-muted-foreground">No activity yet.</li>
           )}
           {rd.activity.map((a, i) => (
-            <li key={i} className="flex items-start justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0">
+            <li
+              key={i}
+              className="flex items-start justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0"
+            >
               <div>
                 <div className="font-medium">{a.action}</div>
                 <div className="text-[11px] text-muted-foreground">
@@ -145,7 +156,9 @@ function PrivacyPage() {
               </div>
               {a.meta && (
                 <div className="max-w-[50%] truncate text-right text-[11px] text-muted-foreground">
-                  {Object.entries(a.meta).map(([k, v]) => `${k}=${v}`).join(", ")}
+                  {Object.entries(a.meta)
+                    .map(([k, v]) => `${k}=${v}`)
+                    .join(", ")}
                 </div>
               )}
             </li>

@@ -32,12 +32,24 @@ export function AvatarGuide({
           strokeWidth="1"
         >
           <animate attributeName="r" values="26;30;26" dur="4s" repeatCount="indefinite" />
-          <animate attributeName="stroke-opacity" values="0.15;0.35;0.15" dur="4s" repeatCount="indefinite" />
+          <animate
+            attributeName="stroke-opacity"
+            values="0.15;0.35;0.15"
+            dur="4s"
+            repeatCount="indefinite"
+          />
         </circle>
       )}
 
       {/* head */}
-      <circle cx="32" cy="26" r="14" fill="var(--color-accent)" stroke="var(--color-primary)" strokeWidth="1.25" />
+      <circle
+        cx="32"
+        cy="26"
+        r="14"
+        fill="var(--color-accent)"
+        stroke="var(--color-primary)"
+        strokeWidth="1.25"
+      />
       {/* shoulders */}
       <path
         d="M10 58 C 12 46, 22 42, 32 42 C 42 42, 52 46, 54 58 Z"

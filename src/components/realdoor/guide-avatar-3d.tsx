@@ -23,13 +23,27 @@ export function GuideAvatar3D({ className, heightClassName = "h-40" }: Props) {
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-md bg-gradient-to-b from-accent/40 to-paper",
+        "relative w-full overflow-hidden bg-gradient-to-b from-muted/50 to-paper border-b border-border",
         heightClassName,
         className,
       )}
       role="img"
       aria-label="RealDoor Guide avatar"
     >
+      {/* Subtle paper grid texture backdrop */}
+      <div
+        className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08] pointer-events-none text-foreground"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+          backgroundSize: "16px 16px",
+        }}
+      />
+
+      {/* Decorative municipal "city-light" glow elements */}
+      <div className="absolute top-4 left-6 w-1.5 h-1.5 rounded-full bg-primary/40 pointer-events-none animate-pulse" />
+      <div className="absolute bottom-12 right-8 w-1 h-1 rounded-full bg-primary/25 pointer-events-none" />
+      <div className="absolute top-1/3 right-12 w-1.5 h-1.5 rounded-full bg-primary/15 pointer-events-none animate-pulse [animation-duration:3s]" />
+
       {hydrated ? (
         <Suspense fallback={<AvatarSkeleton />}>
           <Scene />

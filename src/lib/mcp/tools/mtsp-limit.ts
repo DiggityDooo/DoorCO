@@ -8,10 +8,7 @@ export default defineTool({
   description:
     "Return the frozen HUD FY2026 MTSP annual income limit (USD) for the Boston-Cambridge-Quincy HMFA for a given household size (1-8) and AMI band (50 or 60). Household sizes outside 1-8 return null — RealDoor never extrapolates.",
   inputSchema: {
-    householdSize: z
-      .number()
-      .int()
-      .describe("Household size. Frozen table only covers 1-8."),
+    householdSize: z.number().int().describe("Household size. Frozen table only covers 1-8."),
     amiBand: z
       .union([z.literal(50), z.literal(60)])
       .default(60)

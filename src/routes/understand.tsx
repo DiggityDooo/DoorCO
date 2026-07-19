@@ -2,7 +2,12 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppShell } from "@/components/realdoor/app-shell";
 import { PaperCard } from "@/components/realdoor/glass-card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { AlertCircle, Calculator, BookOpen } from "lucide-react";
 import { FROZEN, limitsFor, ASSISTANT_RULES } from "@/lib/realdoor-data";
 import { confirmedAnnualIncome, useRealDoor } from "@/lib/realdoor-store";
@@ -23,7 +28,9 @@ export const Route = createFileRoute("/understand")({
 
 function UnderstandPage() {
   const rd = useRealDoor();
-  useEffect(() => { rd.visitStage("understand"); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => {
+    rd.visitStage("understand"); /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
   if (!rd.consented) return <Navigate to="/" />;
 
   const income = confirmedAnnualIncome(rd.fields);
@@ -40,7 +47,8 @@ function UnderstandPage() {
         <h1 className="ink-title mt-1 text-3xl sm:text-4xl">Rules and calculation</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Every number here is deterministic and cited. The comparison against the frozen 60% AMI
-          threshold is <span className="font-medium text-foreground">not</span> an eligibility decision.
+          threshold is <span className="font-medium text-foreground">not</span> an eligibility
+          decision.
         </p>
       </header>
 
@@ -53,10 +61,12 @@ function UnderstandPage() {
           {income === null ? (
             <div className="mt-4 rounded-md border border-attention/50 bg-attention/15 p-3 text-sm">
               <AlertCircle className="mr-1 inline h-4 w-4" aria-hidden />
-              <span className="font-medium">Cannot compute: annualized gross is not yet confirmed.</span>{" "}
+              <span className="font-medium">
+                Cannot compute: annualized gross is not yet confirmed.
+              </span>{" "}
               RealDoor does not render tentative or best-effort numbers. Confirm the derived{" "}
-              <span className="font-mono text-xs">annualized</span> field on the Profile screen and this
-              ledger will recompute deterministically.{" "}
+              <span className="font-mono text-xs">annualized</span> field on the Profile screen and
+              this ledger will recompute deterministically.{" "}
               <a href="/profile" className="text-primary underline underline-offset-2">
                 Fix on Profile →
               </a>
@@ -75,31 +85,57 @@ function UnderstandPage() {
               or request human review for a size outside the table.
             </div>
           ) : (
-            <dl className="mt-4 divide-y divide-border rounded-md border border-border">
+            <dl className="mt-4 divide-y divide-border rounded-xl border border-border overflow-hidden bg-paper/60 shadow-sm">
               <Row k="Confirmed annualized income" v={`$${income.toLocaleString()}`} />
               <Row k="Formula" v="gross per period × 26 (bi-weekly)" />
               <Row k="Rule scope" v={`${FROZEN.program} — ${FROZEN.area}`} />
               <Row k="Effective date" v={FROZEN.effectiveDate} />
-              <Row k="Household size" v={`${rd.householdSize}`} />
-              <Row
-                k="Frozen 60% AMI threshold"
-                v={`$${threshold60.toLocaleString()} / year`}
-              />
-              <Row
-                k="Comparison"
-                v={income <= threshold60
-                  ? `Confirmed income ≤ 60% AMI threshold (Δ $${(threshold60 - income).toLocaleString()})`
-                  : `Confirmed income > 60% AMI threshold (Δ $${(income - threshold60).toLocaleString()})`}
-              />
+              <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                <dt className="text-muted-foreground">Household size</dt>
+                <dd className="text-right font-medium flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => rd.setHouseholdSize(Math.max(1, rd.householdSize - 1))}
+                    disabled={rd.householdSize <= 1}
+                    className="w-5 h-5 flex items-center justify-center rounded bg-muted hover:bg-accent border border-border/80 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed select-none active:scale-95 cursor-pointer"
+                    title="Decrease household size"
+                  >
+                    -
+                  </button>
+                  <span className="w-5 text-center font-mono text-xs">{rd.householdSize}</span>
+                  <button
+                    type="button"
+                    onClick={() => rd.setHouseholdSize(Math.min(8, rd.householdSize + 1))}
+                    disabled={rd.householdSize >= 8}
+                    className="w-5 h-5 flex items-center justify-center rounded bg-muted hover:bg-accent border border-border/80 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed select-none active:scale-95 cursor-pointer"
+                    title="Increase household size"
+                  >
+                    +
+                  </button>
+                </dd>
+              </div>
+              <Row k="Frozen 60% AMI threshold" v={`$${threshold60.toLocaleString()} / year`} />
+              <div className="flex flex-col gap-1 px-4 py-3 text-xs bg-muted/20 border-t border-border/40">
+                <dt className="text-[10px] uppercase tracking-wider font-mono font-semibold text-muted-foreground">
+                  Comparison Status
+                </dt>
+                <dd className="mt-1 font-mono text-foreground flex items-center gap-1.5 font-medium leading-relaxed">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-500 animate-pulse shrink-0" />
+                  <span>
+                    {income <= threshold60
+                      ? `Confirmed income ≤ 60% AMI threshold (Δ -$${(threshold60 - income).toLocaleString()} below)`
+                      : `Confirmed income > 60% AMI threshold (Δ +$${(income - threshold60).toLocaleString()} above)`}
+                  </span>
+                </dd>
+              </div>
             </dl>
           )}
 
-
           <div className="mt-4 rounded-md border border-border bg-accent/40 p-3 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Not an eligibility decision.</span>{" "}
-            This is a numeric comparison against a frozen published threshold. The property, PHA,
-            or funder that receives your application makes the eligibility determination using
-            their own verification.
+            <span className="font-medium text-foreground">Not an eligibility decision.</span> This
+            is a numeric comparison against a frozen published threshold. The property, PHA, or
+            funder that receives your application makes the eligibility determination using their
+            own verification.
           </div>
         </PaperCard>
 
@@ -109,8 +145,8 @@ function UnderstandPage() {
             <h2 className="text-sm font-semibold">Cited rules Q&amp;A</h2>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            RealDoor answers only from a fixed rules corpus. When no authoritative citation
-            applies, it abstains.
+            RealDoor answers only from a fixed rules corpus. When no authoritative citation applies,
+            it abstains.
           </p>
 
           <Accordion type="single" collapsible className="mt-3">
@@ -121,35 +157,8 @@ function UnderstandPage() {
                   <p className="text-sm leading-relaxed text-muted-foreground">{r.a}</p>
                   {r.abstain && (
                     <p className="mt-2 rounded bg-attention/15 px-2 py-1 text-[11px] text-foreground">
-                      Abstained — no authoritative citation. RealDoor will not guess.
+                      Abstained — no authoritative citation.
                     </p>
-                  )}
-                  {r.citation && (
-                    <div className="mt-3 rounded-md border border-border bg-paper p-3 text-[12px]">
-                      <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-                        Evidence card
-                      </div>
-                      <dl className="grid grid-cols-[110px_1fr] gap-x-2 gap-y-1">
-                        <dt className="text-muted-foreground">Authority</dt>
-                        <dd>{r.citation.authority}</dd>
-                        <dt className="text-muted-foreground">Locator</dt>
-                        <dd className="font-mono text-[11px]">{r.citation.locator}</dd>
-                        <dt className="text-muted-foreground">Version</dt>
-                        <dd>{r.citation.version}</dd>
-                        <dt className="text-muted-foreground">Effective</dt>
-                        <dd>{r.citation.effective}</dd>
-                      </dl>
-                      {r.citation.url && (
-                        <a
-                          href={r.citation.url}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          className="mt-2 inline-block text-[11px] text-primary underline underline-offset-2"
-                        >
-                          Open source →
-                        </a>
-                      )}
-                    </div>
                   )}
                   <ul className="mt-2 space-y-1 text-[11px] text-muted-foreground">
                     {r.sources.map((s) => (
@@ -160,13 +169,14 @@ function UnderstandPage() {
               </AccordionItem>
             ))}
           </Accordion>
-
         </PaperCard>
       </div>
 
       <PaperCard className="mt-6 p-5">
         <h2 className="text-sm font-semibold">Evidence for this rule</h2>
-        <p className="mt-1 text-xs text-muted-foreground">Displayed outside chat, always visible.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Displayed outside chat, always visible.
+        </p>
         <div className="mt-3 rounded-md border border-border bg-paper p-4 text-sm">
           <div className="font-medium">{FROZEN.program}</div>
           <div className="text-muted-foreground">{FROZEN.area}</div>

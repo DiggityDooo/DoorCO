@@ -13,9 +13,7 @@ export function PaperCard({
   raised?: boolean;
 }) {
   return (
-    <Tag className={cn(raised ? "paper-card-raised" : "paper-card", className)}>
-      {children}
-    </Tag>
+    <Tag className={cn(raised ? "paper-card-raised" : "paper-card", className)}>{children}</Tag>
   );
 }
 

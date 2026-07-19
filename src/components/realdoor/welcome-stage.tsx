@@ -25,7 +25,11 @@ export function WelcomeStage() {
           <div className="h-2 w-24 rounded-full bg-muted" />
           <div className="mt-3 space-y-1.5">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-1.5 rounded-full bg-muted" style={{ width: `${75 - i * 6}%` }} />
+              <div
+                key={i}
+                className="h-1.5 rounded-full bg-muted"
+                style={{ width: `${75 - i * 6}%` }}
+              />
             ))}
           </div>
         </div>

@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Sun, Moon, Trash2, Menu, X, Info, Shield, Type } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
+import { Sun, Moon, Trash2, Menu, X, Info, Shield } from "lucide-react";
 import { useRealDoor } from "@/lib/realdoor-store";
 import { FROZEN } from "@/lib/realdoor-data";
 import { StageRail } from "./stage-rail";
@@ -50,7 +48,23 @@ export function AppShell({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="min-h-dvh bg-background text-foreground relative overflow-x-hidden">
+      {/* Ambient background depth: subtle grids and gradients */}
+      <div className="pointer-events-none fixed inset-0 flex justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,var(--color-primary)_0,transparent_100%)] opacity-[0.03] dark:opacity-[0.08]" />
+        <div
+          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
+          style={{
+            backgroundImage: `linear-gradient(to right, var(--color-foreground) 1px, transparent 1px), linear-gradient(to bottom, var(--color-foreground) 1px, transparent 1px)`,
+            backgroundSize: "40px 40px",
+            maskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, black, transparent)",
+          }}
+        />
+        {/* Soft orbital lines */}
+        <div className="absolute top-[-20%] left-[-10%] w-[120%] h-[120%] rounded-full border border-primary/10 opacity-30 blur-[1px]" />
+        <div className="absolute top-[-10%] left-[-5%] w-[110%] h-[110%] rounded-full border border-foreground/5 opacity-20 blur-[2px]" />
+      </div>
+
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
@@ -63,40 +77,25 @@ export function AppShell({
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2 text-[11px] sm:px-6">
           <span className="badge-persist">
             <Shield className="h-3 w-3" aria-hidden />
-            You confirm. A qualified human decides.
+            RealDoor prepares. Human reviewers decide.
           </span>
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="badge-persist cursor-pointer transition-soft hover:brightness-95"
-                aria-label="Expand rules context details"
-              >
-                <Info className="h-3 w-3" aria-hidden />
-                {FROZEN.contextBadge}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-80 text-[12px]">
-              <div className="text-sm font-medium">Frozen rules context</div>
-              <dl className="mt-2 grid grid-cols-[110px_1fr] gap-x-2 gap-y-1 text-[12px]">
-                <dt className="text-muted-foreground">Program</dt><dd>{FROZEN.program}</dd>
-                <dt className="text-muted-foreground">Area</dt><dd>{FROZEN.area}</dd>
-                <dt className="text-muted-foreground">Effective</dt><dd>{FROZEN.effectiveDate}</dd>
-                <dt className="text-muted-foreground">Simulation</dt><dd>{FROZEN.simulationDate}</dd>
-                <dt className="text-muted-foreground">Evidence window</dt><dd>{FROZEN.evidenceCurrencyDays} days</dd>
-                <dt className="text-muted-foreground">Published by</dt><dd>{FROZEN.publishedBy}</dd>
-              </dl>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                These values are frozen for the prototype and never change mid-session.
-              </p>
-            </PopoverContent>
-          </Popover>
-          <span className="badge-persist" style={{ background: "color-mix(in oklab, var(--color-attention) 22%, var(--color-paper))" }}>
+          <span
+            className="badge-persist"
+            title={`Effective ${FROZEN.effectiveDate} · Simulation ${FROZEN.simulationDate} · Evidence ${FROZEN.evidenceCurrencyDays}-day window`}
+          >
+            <Info className="h-3 w-3" aria-hidden />
+            {FROZEN.contextBadge}
+          </span>
+          <span
+            className="badge-persist"
+            style={{
+              background: "color-mix(in oklab, var(--color-attention) 22%, var(--color-paper))",
+            }}
+          >
             Prototype — synthetic documents only
           </span>
         </div>
       </div>
-
 
       <header className="sticky top-0 z-40 border-b border-border bg-paper/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-3 sm:px-6">
@@ -155,7 +154,6 @@ export function AppShell({
           </nav>
 
           <div className="ml-auto flex items-center gap-1 md:ml-2">
-            <TextSizeControl />
             <button
               type="button"
               aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
@@ -165,7 +163,6 @@ export function AppShell({
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <DeleteSessionDialog />
-
             <button
               type="button"
               aria-label="Open menu"
@@ -190,7 +187,9 @@ export function AppShell({
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "block rounded-md px-3 py-2 text-sm",
-                        active ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/60",
+                        active
+                          ? "bg-accent text-foreground"
+                          : "text-muted-foreground hover:bg-accent/60",
                       )}
                     >
                       {n.label}
@@ -225,9 +224,9 @@ export function AppShell({
       <footer className="mx-auto max-w-[1400px] px-4 pb-10 pt-4 text-xs text-muted-foreground sm:px-6">
         <p>
           RealDoor is <span className="text-foreground">assistive, not adjudicative</span>. It does
-          not approve, deny, rank, or score any application. Frozen source scope:{" "}
-          {FROZEN.program} — {FROZEN.area}, effective {FROZEN.effectiveDate}. Simulation date{" "}
-          {FROZEN.simulationDate}. Evidence currency window {FROZEN.evidenceCurrencyDays} days.
+          not approve, deny, rank, or score any application. Frozen source scope: {FROZEN.program} —{" "}
+          {FROZEN.area}, effective {FROZEN.effectiveDate}. Simulation date {FROZEN.simulationDate}.
+          Evidence currency window {FROZEN.evidenceCurrencyDays} days.
         </p>
       </footer>
     </div>
@@ -281,7 +280,9 @@ function DeleteSessionDialog() {
           </div>
         ) : (
           <div className="space-y-2">
-            <Label htmlFor="confirm-delete">Type <span className="font-mono">DELETE</span> to confirm</Label>
+            <Label htmlFor="confirm-delete">
+              Type <span className="font-mono">DELETE</span> to confirm
+            </Label>
             <Input
               id="confirm-delete"
               value={confirmText}
@@ -291,9 +292,19 @@ function DeleteSessionDialog() {
           </div>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={() => { setOpen(false); reset(); }}>Cancel</Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setOpen(false);
+              reset();
+            }}
+          >
+            Cancel
+          </Button>
           {step === 1 ? (
-            <Button variant="destructive" onClick={() => setStep(2)}>Continue</Button>
+            <Button variant="destructive" onClick={() => setStep(2)}>
+              Continue
+            </Button>
           ) : (
             <Button
               variant="destructive"
@@ -313,56 +324,3 @@ function DeleteSessionDialog() {
     </Dialog>
   );
 }
-
-const TEXT_SIZES: { key: "sm" | "md" | "lg"; label: string; px: string }[] = [
-  { key: "sm", label: "A", px: "15px" },
-  { key: "md", label: "A", px: "16px" },
-  { key: "lg", label: "A", px: "18px" },
-];
-
-function TextSizeControl() {
-  const [size, setSize] = useState<"sm" | "md" | "lg">("md");
-  useEffect(() => {
-    document.documentElement.style.fontSize =
-      TEXT_SIZES.find((t) => t.key === size)?.px ?? "16px";
-  }, [size]);
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label="Text size"
-          className="rounded-md p-2 text-muted-foreground transition-soft hover:bg-accent hover:text-foreground"
-        >
-          <Type className="h-4 w-4" aria-hidden />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-44 p-2">
-        <div className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-          Text size
-        </div>
-        <div role="radiogroup" aria-label="Text size" className="grid grid-cols-3 gap-1">
-          {TEXT_SIZES.map((t, i) => (
-            <button
-              key={t.key}
-              type="button"
-              role="radio"
-              aria-checked={size === t.key}
-              onClick={() => setSize(t.key)}
-              className={cn(
-                "rounded-md border px-2 py-1.5 text-center transition-soft",
-                size === t.key
-                  ? "border-primary/60 bg-accent text-foreground"
-                  : "border-border text-muted-foreground hover:bg-accent/60",
-              )}
-              style={{ fontSize: `${13 + i * 2}px` }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
