@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
 });
 
 function WelcomePage() {
-  const reduce = useReducedMotion();
+  
   const nav = useNavigate();
   const rd = useRealDoor();
   const [agreed, setAgreed] = useState(false);
