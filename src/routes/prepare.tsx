@@ -112,6 +112,13 @@ function PreparePage() {
         if (c.note) line(`     note: ${c.note}`, { size: 10, color: [110, 110, 130] });
       });
       y += 10;
+      line("Citation", { size: 12, bold: true });
+      line(`${FROZEN.program}`, { size: 10 });
+      line(`Area: ${FROZEN.area}`, { size: 10 });
+      line(`Effective: ${FROZEN.effectiveDate} · Simulation: ${FROZEN.simulationDate}`, { size: 10 });
+      line(`Evidence currency: ${FROZEN.evidenceCurrencyDays} days`, { size: 10 });
+      line(`${FROZEN.citation}`, { size: 9, color: [110, 110, 130] });
+      y += 8;
       line("RealDoor is assistive, not adjudicative. Nothing was submitted.", { size: 9, color: [110, 110, 130] });
       doc.save("realdoor-packet.pdf");
       rd.logActivity({ stage: "prepare", action: "packet_pdf_exported", meta: { items: includedItems.length } });
@@ -126,7 +133,21 @@ function PreparePage() {
     try {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
+
+      // Root summary
       zip.file("README.txt", buildPacketText());
+      zip.file("CONTENTS.txt", [
+        "REALDOOR PACKET — FOLDER LAYOUT",
+        "",
+        "  README.txt              Plain-text packet summary",
+        "  packet.json             Machine-readable summary",
+        "  documents/              Per-item document references (metadata only, no PII payloads)",
+        "  citations/              Frozen HUD FY2026 MTSP citation used by this session",
+        "  activity-history/       Redacted action log (no document contents)",
+        "",
+        "Note: This is a synthetic prototype. Nothing was submitted.",
+      ].join("\n"));
+
       zip.file(
         "packet.json",
         JSON.stringify(
@@ -148,6 +169,49 @@ function PreparePage() {
           2,
         ),
       );
+
+      // documents/ — per checklist item metadata
+      const docsDir = zip.folder("documents");
+      includedItems.forEach((c) => {
+        docsDir?.file(
+          `${c.id}.txt`,
+          [
+            `Item: ${c.title}`,
+            `Status: ${c.status}`,
+            `Description: ${c.description}`,
+            c.note ? `Note: ${c.note}` : "",
+            "",
+            "Renter-controlled reference only. No document payload is included.",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        );
+      });
+
+      // citations/ — frozen HUD citation
+      const citeDir = zip.folder("citations");
+      citeDir?.file(
+        "hud-fy2026-mtsp.txt",
+        [
+          "HUD FY 2026 Multifamily Tax Subsidy Project (MTSP) Income Limits",
+          `Program: ${FROZEN.program}`,
+          `Area: ${FROZEN.area}`,
+          `Effective: ${FROZEN.effectiveDate}`,
+          `Simulation date: ${FROZEN.simulationDate}`,
+          `Evidence currency window: ${FROZEN.evidenceCurrencyDays} days`,
+          `Published by: ${FROZEN.publishedBy}`,
+          "",
+          FROZEN.citation,
+        ].join("\n"),
+      );
+
+      // activity-history/ — redacted log
+      const actDir = zip.folder("activity-history");
+      actDir?.file(
+        "activity.json",
+        JSON.stringify(rd.activity, null, 2),
+      );
+
       const blob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -174,6 +238,14 @@ function PreparePage() {
           Checklist statuses describe evidence, not eligibility.
         </p>
       </header>
+
+
+      <ReadinessBanner
+        included={includedItems.length}
+        missing={counts.missing}
+        expired={counts.expired}
+        conflicting={counts.conflicting}
+      />
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         <StatCard label="Current" value={counts.current} tone="success" />
@@ -308,6 +380,50 @@ function StatCard({
     <div className={"rounded-md border bg-paper p-3 " + cls}>
       <div className="text-2xl font-semibold tabular-nums">{value}</div>
       <div className="text-[11px] uppercase tracking-wider">{label}</div>
+    </div>
+  );
+}
+
+function ReadinessBanner({
+  included,
+  missing,
+  expired,
+  conflicting,
+}: {
+  included: number;
+  missing: number;
+  expired: number;
+  conflicting: number;
+}) {
+  const gaps = missing + expired + conflicting;
+  const ready = included > 0 && gaps === 0;
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={
+        "mb-4 flex flex-wrap items-start gap-3 rounded-md border p-4 " +
+        (ready
+          ? "border-[color:var(--color-success)]/40 bg-[color:var(--color-success)]/8"
+          : "border-attention/50 bg-attention/10")
+      }
+    >
+      <div className="min-w-0">
+        <div className="text-sm font-semibold">
+          {ready ? "Ready for human review" : "Needs review before handoff"}
+        </div>
+        <p className="mt-1 text-[12.5px] text-muted-foreground">
+          {ready
+            ? `${included} item${included === 1 ? "" : "s"} included. RealDoor is not deciding eligibility — a qualified human still verifies your packet.`
+            : `${gaps} item${gaps === 1 ? "" : "s"} still need attention: ${[
+                missing && `${missing} missing`,
+                expired && `${expired} expired`,
+                conflicting && `${conflicting} conflicting`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}.`}
+        </p>
+      </div>
     </div>
   );
 }

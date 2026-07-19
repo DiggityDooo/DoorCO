@@ -76,6 +76,57 @@ function PrivacyPage() {
       </div>
 
       <PaperCard className="mt-6 p-5">
+        <h2 className="text-sm font-semibold">Data-use register</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Every category of data this session touches, why it's used, and where it lives.
+        </p>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[560px] text-left text-[12.5px]">
+            <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="py-2 pr-3 font-medium">Data</th>
+                <th className="py-2 pr-3 font-medium">Purpose</th>
+                <th className="py-2 pr-3 font-medium">Where</th>
+                <th className="py-2 font-medium">Retention</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              <tr>
+                <td className="py-2 pr-3">Uploaded document (synthetic)</td>
+                <td className="py-2 pr-3 text-muted-foreground">Field extraction on the allowlist only.</td>
+                <td className="py-2 pr-3 text-muted-foreground">Browser memory</td>
+                <td className="py-2 text-muted-foreground">Session</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-3">Confirmed fields (income, HH size, dates)</td>
+                <td className="py-2 pr-3 text-muted-foreground">Populate calculation ledger and packet.</td>
+                <td className="py-2 pr-3 text-muted-foreground">Browser memory</td>
+                <td className="py-2 text-muted-foreground">Session</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-3">Activity log (actions only)</td>
+                <td className="py-2 pr-3 text-muted-foreground">Transparency into what happened this session.</td>
+                <td className="py-2 pr-3 text-muted-foreground">Browser memory</td>
+                <td className="py-2 text-muted-foreground">Session</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-3">Exported packet (PDF / ZIP)</td>
+                <td className="py-2 pr-3 text-muted-foreground">Renter-controlled handoff to a human reviewer.</td>
+                <td className="py-2 pr-3 text-muted-foreground">Your device only</td>
+                <td className="py-2 text-muted-foreground">You control</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-3">Analytics / tracking</td>
+                <td className="py-2 pr-3 text-muted-foreground">None.</td>
+                <td className="py-2 pr-3 text-muted-foreground">—</td>
+                <td className="py-2 text-muted-foreground">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </PaperCard>
+
+      <PaperCard className="mt-6 p-5">
         <h2 className="text-sm font-semibold">Activity log (redacted)</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Actions only. No raw document contents are recorded.

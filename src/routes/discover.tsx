@@ -42,6 +42,7 @@ function DiscoverPage() {
       return matchesFilter && matchesQuery;
     });
   }, [q, rd.municipalityFilter]);
+  const hidden = PROPERTIES.length - list.length;
 
   return (
     <AppShell>
@@ -87,10 +88,16 @@ function DiscoverPage() {
             Map view (coming)
           </button>
         </div>
-        <p className="mt-3 flex items-start gap-1.5 text-[11px] text-muted-foreground">
-          <Info className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
-          Locations shown have <span className="font-medium">medium precision</span>. Verify addresses with the property.
-        </p>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+          <p className="flex items-start gap-1.5">
+            <Info className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+            Locations shown have <span className="font-medium">medium precision</span>. Verify addresses with the property.
+          </p>
+          <p aria-live="polite" className="tabular-nums">
+            Showing <span className="font-medium text-foreground">{list.length}</span> of {PROPERTIES.length}
+            {hidden > 0 && <span> · {hidden} hidden by filter</span>}
+          </p>
+        </div>
       </PaperCard>
 
       <ul className="grid gap-4 sm:grid-cols-2">

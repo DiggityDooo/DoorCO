@@ -1,0 +1,120 @@
+{
+  "$schema": "./realdoor-contract.schema.json",
+  "version": "1.0.0",
+  "updatedAt": "2026-07-19",
+  "ownership": {
+    "engine": {
+      "stack": "Next.js 15 App Router",
+      "paths": ["app/", "lib/", "data/", "prisma/", "tests/"],
+      "role": "Authoritative for extraction, rules math, Prisma sessions, safety guards, server actions."
+    },
+    "uiPrototype": {
+      "stack": "Lovable TanStack Start + Vite",
+      "paths": ["src/"],
+      "repoMirror": "https://github.com/DiggityDooo/realdoor-copilot",
+      "branchInCanonicalRepo": "lovable/realdoor-ui",
+      "role": "Authoritative for renter-facing UX, copilot panel, 3D Guide, stage rail, export UX. Must NOT invent thresholds, geography, or field allowlists."
+    },
+    "shared": {
+      "paths": ["shared/"],
+      "role": "Single source of truth for frozen demo constants. Both stacks read this file. Cursor agents edit here first; Lovable imports or mirrors values."
+    },
+    "productBrief": "REALDOOR_LOVABLE_BRIEF.md",
+    "lovableChecklist": "LOVABLE_CHANGE_REQUESTS.md"
+  },
+  "frozenContext": {
+    "geography": "Boston-Cambridge-Quincy, MA-NH HMFA",
+    "geographyHudLabel": "Boston-Cambridge-Quincy, MA-NH HUD Metro FMR Area",
+    "metroLabel": "Boston–Cambridge–Quincy, MA-NH",
+    "program": "LIHTC",
+    "ruleYear": "FY2026",
+    "effectiveDate": "2026-05-01",
+    "simulationDate": "2026-07-18",
+    "evidenceCurrencyDays": 60,
+    "amiThresholdDefault": 60,
+    "sourceUrl": "https://www.huduser.gov/portal/datasets/mtsp.html",
+    "sourceRelease": "FY2026 MTSP Income Limits (frozen)",
+    "datasetAsOf": "2026-05-01",
+    "starterPackCsv": "realdoor-hackathon-starter-pack/data/mtsp_2026_boston_cambridge_quincy.csv"
+  },
+  "mtspLimitsAnnualUsd": {
+    "1": { "50": 60000, "60": 72000 },
+    "2": { "50": 68600, "60": 82320 },
+    "3": { "50": 77150, "60": 92580 },
+    "4": { "50": 85700, "60": 102840 },
+    "5": { "50": 92600, "60": 111120 },
+    "6": { "50": 99450, "60": 119340 },
+    "7": { "50": 106300, "60": 127560 },
+    "8": { "50": 113150, "60": 135780 }
+  },
+  "demoScenarios": [
+    {
+      "id": "HH-003",
+      "label": "Avery Moss",
+      "role": "default",
+      "notes": "Employment + benefit income; invite monthly benefit correction via normal edit card."
+    },
+    {
+      "id": "HH-005",
+      "label": "Tess Alder",
+      "role": "expired-evidence",
+      "notes": "Employment letter dated 2026-04-14 is outside 60-day simulation convention."
+    },
+    {
+      "id": "HH-002",
+      "label": "Jonas Vale",
+      "role": "injection-attempt",
+      "notes": "Embedded instructions in pay stub; show neutral exclusion notice."
+    }
+  ],
+  "stages": ["discover", "profile", "understand", "prepare"],
+  "fieldAllowlistOrganizer": [
+    "employer",
+    "employee",
+    "pay_period_start",
+    "pay_period_end",
+    "gross_pay_period",
+    "pay_frequency",
+    "ytd_gross",
+    "annualized",
+    "benefit_type",
+    "monthly_benefit",
+    "award_start",
+    "award_end"
+  ],
+  "fieldAllowlistLegacyNext": [
+    "applicantName",
+    "householdSize",
+    "annualIncome",
+    "incomeSource",
+    "programName",
+    "documentDate",
+    "employerOrIssuer",
+    "propertyName"
+  ],
+  "fieldMappingLegacyToOrganizer": {
+    "applicantName": "employee",
+    "employerOrIssuer": "employer",
+    "annualIncome": "annualized",
+    "documentDate": "pay_period_end"
+  },
+  "safety": {
+    "neverOutput": ["eligible", "approved", "denied", "qualified", "rejected", "score", "rank"],
+    "persistentNotices": [
+      "Prototype: use synthetic documents only.",
+      "You confirm. A qualified human decides."
+    ],
+    "contextBadge": "Boston pilot | FY 2026 rules",
+    "copilotName": "RealDoor Guide",
+    "copilotMode": "read-only",
+    "avatarAsset": "AI 3D avatar/Meshy_AI_The_Architect_Cyberpu_0719020306_image-to-3d-texture.glb"
+  },
+  "syncRules": [
+    "Edit shared/realdoor-contract.json before changing geography, MTSP limits, dates, or allowlists.",
+    "Lovable UI (src/) must import frozen values from this contract — never hardcode Sacramento or synthetic placeholder limits.",
+    "Next engine (lib/, data/) must align data/config.json and loaders with this contract.",
+    "Do not merge Lovable and Next into one runtime. They are sibling apps in one repo.",
+    "Lovable auto-pushes to realdoor-copilot; canonical merge target is HackNationProto branch lovable/realdoor-ui.",
+    "After contract changes: run Next tests; send Lovable a message pointing at the updated contract on GitHub."
+  ]
+}
