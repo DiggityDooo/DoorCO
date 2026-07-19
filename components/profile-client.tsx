@@ -150,7 +150,12 @@ export function ProfileClient({
 
         <label
           htmlFor="consent-process"
-          style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start", marginTop: "0.75rem" }}
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            alignItems: "flex-start",
+            marginTop: "0.75rem",
+          }}
         >
           <input
             id="consent-process"
@@ -160,9 +165,9 @@ export function ProfileClient({
             style={{ marginTop: "0.25rem" }}
           />
           <span>
-            I consent to processing this synthetic document in this ephemeral session for allowlisted
-            field extraction. See{" "}
-            <Link href="/session">Session</Link> and <Link href="/transparency">Transparency</Link>.
+            I consent to processing this synthetic document in this ephemeral session for
+            allowlisted field extraction. See <Link href="/session">Session</Link> and{" "}
+            <Link href="/transparency">Transparency</Link>.
           </span>
         </label>
 
@@ -201,7 +206,14 @@ export function ProfileClient({
           <div className="card" style={{ margin: 0, opacity: consented ? 1 : 0.55 }}>
             <strong>Try a synthetic example</strong>
             <div className="notice">No file needed — loads a frozen fixture</div>
-            <div style={{ marginTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+            <div
+              style={{
+                marginTop: "0.5rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.4rem",
+              }}
+            >
               {EXAMPLES.map((ex) => (
                 <button
                   key={ex.id}

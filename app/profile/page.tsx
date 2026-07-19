@@ -27,7 +27,5 @@ export default async function ProfilePage({
     type: d.type,
     label: `${d.id} (${d.type})`,
   }));
-  return (
-    <ProfileClient initialFields={fields} initialDocId={initialDocId} docs={docs} />
-  );
+  return <ProfileClient initialFields={fields} initialDocId={initialDocId} docs={docs} />;
 }
