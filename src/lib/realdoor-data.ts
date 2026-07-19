@@ -413,21 +413,43 @@ export const PROPERTIES: PropertyListing[] = [
 ];
 
 // -------- Rules Q&A (assistive, cited, abstain when uncertain) --------
+export interface RuleCitation {
+  authority: string;
+  locator: string;
+  version: string;
+  effective: string;
+  url?: string;
+}
+
 export const ASSISTANT_RULES: {
   q: string;
   a: string;
   sources: string[];
   abstain?: boolean;
+  citation?: RuleCitation;
 }[] = [
   {
     q: "How is annualized income calculated here?",
     a: "Annualized income for a stable bi-weekly earner is gross pay per period × 26 pay periods. This is the deterministic HUD Part 5 convention. It is a calculation, not an approval.",
     sources: ["24 CFR 5.609", "HUD Handbook 4350.3 REV-1 Ch. 5"],
+    citation: {
+      authority: "U.S. Dept. of Housing and Urban Development",
+      locator: "24 CFR § 5.609(a)–(b); Handbook 4350.3 REV-1 CHG-4, Ch. 5, §5-5",
+      version: "REV-1 CHG-4",
+      effective: "2013-08-07 (last technical change); frozen for this session",
+    },
   },
   {
     q: "What geography and effective date apply?",
     a: "Boston-Cambridge-Quincy, MA-NH HUD Metro FMR Area. FY2026 MTSP limits are frozen at effective date 2026-05-01. Limits outside this scope are not shown.",
     sources: ["HUD FY2026 MTSP Income Limits — Boston-Cambridge-Quincy HMFA"],
+    citation: {
+      authority: "HUD Office of Policy Development and Research (PD&R)",
+      locator: "FY 2026 MTSP Income Limits — Boston-Cambridge-Quincy, MA-NH HMFA",
+      version: "FY2026 MTSP",
+      effective: FROZEN.effectiveDate,
+      url: FROZEN.url,
+    },
   },
   {
     q: "Am I eligible? Am I qualified? Decide for me.",
@@ -451,3 +473,4 @@ export const ASSISTANT_RULES: {
     abstain: true,
   },
 ];
+

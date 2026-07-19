@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Sun, Moon, Trash2, Menu, X, Info, Shield } from "lucide-react";
+import { Sun, Moon, Trash2, Menu, X, Info, Shield, Type } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import { useRealDoor } from "@/lib/realdoor-store";
 import { FROZEN } from "@/lib/realdoor-data";
 import { StageRail } from "./stage-rail";
@@ -63,15 +65,38 @@ export function AppShell({
             <Shield className="h-3 w-3" aria-hidden />
             You confirm. A qualified human decides.
           </span>
-          <span className="badge-persist" title={`Effective ${FROZEN.effectiveDate} · Simulation ${FROZEN.simulationDate} · Evidence ${FROZEN.evidenceCurrencyDays}-day window`}>
-            <Info className="h-3 w-3" aria-hidden />
-            {FROZEN.contextBadge}
-          </span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="badge-persist cursor-pointer transition-soft hover:brightness-95"
+                aria-label="Expand rules context details"
+              >
+                <Info className="h-3 w-3" aria-hidden />
+                {FROZEN.contextBadge}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-80 text-[12px]">
+              <div className="text-sm font-medium">Frozen rules context</div>
+              <dl className="mt-2 grid grid-cols-[110px_1fr] gap-x-2 gap-y-1 text-[12px]">
+                <dt className="text-muted-foreground">Program</dt><dd>{FROZEN.program}</dd>
+                <dt className="text-muted-foreground">Area</dt><dd>{FROZEN.area}</dd>
+                <dt className="text-muted-foreground">Effective</dt><dd>{FROZEN.effectiveDate}</dd>
+                <dt className="text-muted-foreground">Simulation</dt><dd>{FROZEN.simulationDate}</dd>
+                <dt className="text-muted-foreground">Evidence window</dt><dd>{FROZEN.evidenceCurrencyDays} days</dd>
+                <dt className="text-muted-foreground">Published by</dt><dd>{FROZEN.publishedBy}</dd>
+              </dl>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                These values are frozen for the prototype and never change mid-session.
+              </p>
+            </PopoverContent>
+          </Popover>
           <span className="badge-persist" style={{ background: "color-mix(in oklab, var(--color-attention) 22%, var(--color-paper))" }}>
             Prototype — synthetic documents only
           </span>
         </div>
       </div>
+
 
       <header className="sticky top-0 z-40 border-b border-border bg-paper/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center gap-4 px-4 py-3 sm:px-6">
@@ -130,6 +155,7 @@ export function AppShell({
           </nav>
 
           <div className="ml-auto flex items-center gap-1 md:ml-2">
+            <TextSizeControl />
             <button
               type="button"
               aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
@@ -139,6 +165,7 @@ export function AppShell({
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <DeleteSessionDialog />
+
             <button
               type="button"
               aria-label="Open menu"
@@ -286,3 +313,56 @@ function DeleteSessionDialog() {
     </Dialog>
   );
 }
+
+const TEXT_SIZES: { key: "sm" | "md" | "lg"; label: string; px: string }[] = [
+  { key: "sm", label: "A", px: "15px" },
+  { key: "md", label: "A", px: "16px" },
+  { key: "lg", label: "A", px: "18px" },
+];
+
+function TextSizeControl() {
+  const [size, setSize] = useState<"sm" | "md" | "lg">("md");
+  useEffect(() => {
+    document.documentElement.style.fontSize =
+      TEXT_SIZES.find((t) => t.key === size)?.px ?? "16px";
+  }, [size]);
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label="Text size"
+          className="rounded-md p-2 text-muted-foreground transition-soft hover:bg-accent hover:text-foreground"
+        >
+          <Type className="h-4 w-4" aria-hidden />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-44 p-2">
+        <div className="mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+          Text size
+        </div>
+        <div role="radiogroup" aria-label="Text size" className="grid grid-cols-3 gap-1">
+          {TEXT_SIZES.map((t, i) => (
+            <button
+              key={t.key}
+              type="button"
+              role="radio"
+              aria-checked={size === t.key}
+              onClick={() => setSize(t.key)}
+              className={cn(
+                "rounded-md border px-2 py-1.5 text-center transition-soft",
+                size === t.key
+                  ? "border-primary/60 bg-accent text-foreground"
+                  : "border-border text-muted-foreground hover:bg-accent/60",
+              )}
+              style={{ fontSize: `${13 + i * 2}px` }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+

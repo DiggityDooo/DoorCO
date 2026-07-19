@@ -40,6 +40,11 @@ function PreparePage() {
 
   const confirmedFields = rd.fields.filter((f) => f.confirmed && FIELD_ALLOWLIST.has(f.id));
   const includedItems = rd.checklist.filter((c) => c.includedInPacket);
+  const blockingConflicts = includedItems.filter(
+    (c) => c.status === "conflicting" || c.status === "expired",
+  );
+  const exportBlocked = blockingConflicts.length > 0;
+
 
   const buildPacketText = () => {
     const lines: string[] = [];
@@ -314,14 +319,30 @@ function PreparePage() {
                 </Label>
               </div>
             </div>
+            {exportBlocked && (
+              <div
+                role="alert"
+                className="mt-3 rounded-md border border-attention/60 bg-attention/10 p-3 text-[12px]"
+              >
+                <div className="font-medium">Resolve {blockingConflicts.length} discrepanc{blockingConflicts.length === 1 ? "y" : "ies"} to export.</div>
+                <ul className="mt-1 list-disc space-y-0.5 pl-5 text-muted-foreground">
+                  {blockingConflicts.map((c) => (
+                    <li key={c.id}>{c.title} — {c.status}</li>
+                  ))}
+                </ul>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Uncheck the item to exclude it from the packet, or return to Profile to correct it.
+                </p>
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button disabled={!preDownloadConfirmed || busy} onClick={exportPdf}>
+              <Button disabled={!preDownloadConfirmed || busy || exportBlocked} onClick={exportPdf}>
                 <FileText className="h-4 w-4" aria-hidden />
                 <span>Download PDF</span>
               </Button>
               <Button
                 variant="outline"
-                disabled={!preDownloadConfirmed || busy}
+                disabled={!preDownloadConfirmed || busy || exportBlocked}
                 onClick={exportZip}
               >
                 <FileArchive className="h-4 w-4" aria-hidden />
@@ -331,6 +352,7 @@ function PreparePage() {
             <p className="mt-3 text-[11px] text-muted-foreground">
               No send workflow. There is no button that transmits your packet.
             </p>
+
           </PaperCard>
 
           <PaperCard className="p-5">

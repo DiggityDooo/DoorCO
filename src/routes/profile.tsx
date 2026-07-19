@@ -140,6 +140,10 @@ function ProfilePage() {
         </Tabs>
       </div>
 
+      <CorrectionSummary />
+      <ConflictPanel />
+
+
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-paper p-4 text-sm">
         <div className="flex items-center gap-2">
           <Label htmlFor="hh" className="whitespace-nowrap">Household size</Label>
@@ -336,10 +340,24 @@ function FieldRow({
               <Button
                 size="sm"
                 onClick={() => {
+                  const changed = draft !== f.value;
+                  const before = f.value;
                   rd.setField(f.id, { value: draft });
                   rd.confirmField(f.id);
+                  if (changed) {
+                    rd.logActivity({
+                      stage: "profile",
+                      action: "field_corrected",
+                      meta: { id: f.id, from: before, to: draft },
+                    });
+                  }
                   setEditing(false);
-                  toast.success("Field updated and confirmed");
+                  toast.success(
+                    changed
+                      ? `Correction saved: ${f.label} → "${draft}" (was "${before}")`
+                      : "Field confirmed",
+                    { description: changed ? "Downstream calculations will refresh." : undefined },
+                  );
                 }}
               >
                 Save
@@ -348,6 +366,7 @@ function FieldRow({
                 Cancel
               </Button>
             </>
+
           ) : (
             <>
               <Button
@@ -397,3 +416,73 @@ function ConfidencePill({ f }: { f: ExtractedField }) {
     </span>
   );
 }
+
+function CorrectionSummary() {
+  const rd = useRealDoor();
+  const corrections = rd.activity.filter((a) => a.action === "field_corrected");
+  if (corrections.length === 0) return null;
+  return (
+    <section
+      aria-labelledby="corr-title"
+      aria-live="polite"
+      className="mb-6 rounded-md border border-primary/40 bg-primary/5 p-4"
+    >
+      <h2 id="corr-title" className="text-sm font-semibold">
+        Corrections applied ({corrections.length})
+      </h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Recorded so downstream calculations stay traceable. The RealDoor Guide will explain
+        which numbers a correction affects in the Understand ledger.
+      </p>
+      <ul className="mt-2 space-y-1 text-[12.5px]">
+        {corrections.slice(0, 5).map((c, i) => (
+          <li key={i} className="rounded bg-paper px-2 py-1">
+            <span className="font-mono text-[11px] text-muted-foreground">{c.meta?.id}</span>
+            {" — "}
+            <span className="text-muted-foreground">from</span>{" "}
+            <span className="font-medium">"{c.meta?.from}"</span>{" "}
+            <span className="text-muted-foreground">to</span>{" "}
+            <span className="font-medium">"{c.meta?.to}"</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ConflictPanel() {
+  const rd = useRealDoor();
+  const conflicts = rd.checklist.filter(
+    (c) => c.status === "conflicting" || c.status === "expired",
+  );
+  if (conflicts.length === 0) return null;
+  return (
+    <section
+      aria-labelledby="conflict-title"
+      role="alert"
+      className="mb-6 rounded-md border border-attention/60 bg-attention/10 p-4"
+    >
+      <h2 id="conflict-title" className="text-sm font-semibold">
+        Discrepancies to resolve before packet handoff
+      </h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        These items conflict with other evidence or fall outside the {FROZEN.evidenceCurrencyDays}-day
+        currency window. RealDoor does not resolve them for you; a qualified human reviewer needs
+        an unambiguous packet.
+      </p>
+      <ul className="mt-2 space-y-1 text-[12.5px]">
+        {conflicts.map((c) => (
+          <li key={c.id} className="rounded bg-paper px-2 py-1">
+            <span className="font-medium">{c.title}</span>{" "}
+            <span className="text-muted-foreground">— status: {c.status}</span>
+            {c.note && <div className="text-[11px] text-muted-foreground">Note: {c.note}</div>}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Packet export is blocked in Prepare until each item is resolved or explicitly excluded.
+      </p>
+    </section>
+  );
+}
+

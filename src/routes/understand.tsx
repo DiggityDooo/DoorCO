@@ -121,8 +121,35 @@ function UnderstandPage() {
                   <p className="text-sm leading-relaxed text-muted-foreground">{r.a}</p>
                   {r.abstain && (
                     <p className="mt-2 rounded bg-attention/15 px-2 py-1 text-[11px] text-foreground">
-                      Abstained — no authoritative citation.
+                      Abstained — no authoritative citation. RealDoor will not guess.
                     </p>
+                  )}
+                  {r.citation && (
+                    <div className="mt-3 rounded-md border border-border bg-paper p-3 text-[12px]">
+                      <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Evidence card
+                      </div>
+                      <dl className="grid grid-cols-[110px_1fr] gap-x-2 gap-y-1">
+                        <dt className="text-muted-foreground">Authority</dt>
+                        <dd>{r.citation.authority}</dd>
+                        <dt className="text-muted-foreground">Locator</dt>
+                        <dd className="font-mono text-[11px]">{r.citation.locator}</dd>
+                        <dt className="text-muted-foreground">Version</dt>
+                        <dd>{r.citation.version}</dd>
+                        <dt className="text-muted-foreground">Effective</dt>
+                        <dd>{r.citation.effective}</dd>
+                      </dl>
+                      {r.citation.url && (
+                        <a
+                          href={r.citation.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="mt-2 inline-block text-[11px] text-primary underline underline-offset-2"
+                        >
+                          Open source →
+                        </a>
+                      )}
+                    </div>
                   )}
                   <ul className="mt-2 space-y-1 text-[11px] text-muted-foreground">
                     {r.sources.map((s) => (
@@ -133,6 +160,7 @@ function UnderstandPage() {
               </AccordionItem>
             ))}
           </Accordion>
+
         </PaperCard>
       </div>
 
