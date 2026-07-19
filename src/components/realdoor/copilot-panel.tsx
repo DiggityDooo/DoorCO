@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MessageCircle, X, ChevronDown, Info } from "lucide-react";
 import { AvatarGuide } from "./avatar-guide";
+import { GuideAvatar3D } from "./guide-avatar-3d";
 import { useRealDoor } from "@/lib/realdoor-store";
 import { ASSISTANT_RULES } from "@/lib/realdoor-data";
 import { cn } from "@/lib/utils";
