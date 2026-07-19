@@ -31,4 +31,5 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/data ./data
 
 EXPOSE 8080
-CMD ["npm", "run", "start"]
+
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
