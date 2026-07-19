@@ -373,3 +373,68 @@
     animation: none !important;
   }
 }
+
+
+/* RealDoor Guide cockpit stage — adapted from BuggyVerse glass/3D chrome. */
+.copilot-cockpit {
+  backdrop-filter: blur(22px) saturate(1.22);
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--color-paper) 88%, transparent), color-mix(in oklab, var(--color-background) 52%, transparent)),
+    radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--color-primary) 14%, transparent), transparent 42%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 28px 90px -58px rgb(7 8 26 / 0.62);
+}
+
+.guide-avatar-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in oklab, var(--color-primary) 22%, transparent), transparent 32%),
+    radial-gradient(circle at 68% 16%, color-mix(in oklab, var(--bv-violet) 20%, transparent), transparent 26%),
+    linear-gradient(90deg, transparent 0 48%, color-mix(in oklab, var(--color-primary) 18%, transparent) 49% 51%, transparent 52% 100%);
+  opacity: 0.72;
+}
+
+.guide-avatar-stage::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 44%;
+  background-image:
+    radial-gradient(circle, color-mix(in oklab, var(--color-primary) 88%, white) 0 1px, transparent 1.6px),
+    linear-gradient(to right, color-mix(in oklab, var(--color-primary) 18%, transparent) 1px, transparent 1px);
+  background-size: 34px 24px, 34px 24px;
+  mask-image: linear-gradient(to top, black, transparent 88%);
+  opacity: 0.48;
+}
+
+.guide-header {
+  background:
+    linear-gradient(90deg, color-mix(in oklab, var(--color-primary) 10%, transparent), transparent 58%),
+    color-mix(in oklab, var(--color-muted) 42%, transparent) !important;
+}
+
+.copilot-body button {
+  position: relative;
+  overflow: hidden;
+}
+
+.copilot-body button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.10), transparent);
+  transform: translateX(-120%);
+  transition: transform 520ms ease;
+}
+
+.copilot-body button:hover::after {
+  transform: translateX(120%);
+}
+
+.badge-persist {
+  backdrop-filter: blur(12px) saturate(1.18);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+}

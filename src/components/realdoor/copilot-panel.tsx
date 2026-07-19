@@ -61,7 +61,7 @@ export function CopilotPanel() {
         id="copilot-panel"
         aria-label="RealDoor Guide (read-only)"
         className={cn(
-          "hidden lg:flex sticky top-24 h-[calc(100dvh-8rem)] w-full max-w-sm flex-col overflow-hidden rounded-lg border border-border bg-paper",
+          "copilot-cockpit hidden lg:flex sticky top-24 h-[calc(100dvh-8rem)] w-full max-w-sm flex-col overflow-hidden rounded-lg border border-border bg-paper",
         )}
       >
         <GuideAvatar3D heightClassName="h-52" className="rounded-none border-b border-border" />
@@ -113,7 +113,7 @@ export function CopilotPanel() {
 
 function Header() {
   return (
-    <div className="flex items-center gap-3 border-b border-border px-4 py-3 bg-muted/25">
+    <div className="guide-header flex items-center gap-3 border-b border-border px-4 py-3 bg-muted/25">
       <AvatarGuide size={32} active />
       <div className="min-w-0">
         <div className="truncate text-sm font-semibold text-foreground">RealDoor Guide</div>
@@ -157,7 +157,7 @@ function Body({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+    <div className="copilot-body flex-1 overflow-y-auto px-4 py-4 space-y-4">
       <div className="rounded-xl border border-border bg-accent/40 p-3 text-[12px] text-foreground">
         <p className="flex items-start gap-2.5 leading-relaxed">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
