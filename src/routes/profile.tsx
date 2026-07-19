@@ -147,11 +147,15 @@ function ProfilePage() {
             id="hh"
             type="number"
             min={1}
-            max={6}
+            max={8}
             value={rd.householdSize}
-            onChange={(e) => rd.setHouseholdSize(Math.min(6, Math.max(1, Number(e.target.value) || 1)))}
+            onChange={(e) => rd.setHouseholdSize(Math.min(8, Math.max(1, Number(e.target.value) || 1)))}
             className="w-20"
+            aria-describedby="hh-hint"
           />
+          <span id="hh-hint" className="text-[11px] text-muted-foreground">
+            Frozen MTSP table covers 1–8.
+          </span>
           <span className="text-xs text-muted-foreground">{rd.cityZip}</span>
         </div>
         <div className="flex gap-2">

@@ -1,10 +1,39 @@
 import { useState } from "react";
-import { MessageCircle, X, ChevronDown, Info } from "lucide-react";
+import { MessageCircle, X, ChevronDown, Info, Sparkles } from "lucide-react";
+import { useRouterState } from "@tanstack/react-router";
 import { AvatarGuide } from "./avatar-guide";
 import { GuideAvatar3D } from "./guide-avatar-3d";
 import { useRealDoor } from "@/lib/realdoor-store";
 import { ASSISTANT_RULES } from "@/lib/realdoor-data";
 import { cn } from "@/lib/utils";
+
+const STAGE_CHIPS: Record<string, string[]> = {
+  discover: [
+    "Why is this list unranked?",
+    "Does RealDoor know availability?",
+    "How do I contact a property?",
+  ],
+  profile: [
+    "Why do I have to confirm each field?",
+    "What does 'evidence expired' mean?",
+    "Can RealDoor edit fields for me?",
+  ],
+  understand: [
+    "How is the 60% AMI threshold set?",
+    "Does RealDoor decide if I qualify?",
+    "Where does this citation come from?",
+  ],
+  prepare: [
+    "Will you send my packet anywhere?",
+    "What goes into the ZIP?",
+    "What should I do after downloading?",
+  ],
+  default: [
+    "What can RealDoor do?",
+    "What will RealDoor not answer?",
+    "Where is my data stored?",
+  ],
+};
 
 /**
  * RealDoor Guide — READ-ONLY copilot.
@@ -108,6 +137,28 @@ function Body({
   openIdx: number | null;
   setOpenIdx: (n: number | null) => void;
 }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const stageKey =
+    pathname.startsWith("/discover")
+      ? "discover"
+      : pathname.startsWith("/profile")
+        ? "profile"
+        : pathname.startsWith("/understand")
+          ? "understand"
+          : pathname.startsWith("/prepare")
+            ? "prepare"
+            : "default";
+  const chips = STAGE_CHIPS[stageKey] ?? STAGE_CHIPS.default;
+
+  // Find matching assistant rule for a chip label; fall back to search substring.
+  const chipToIndex = (label: string) => {
+    const lower = label.toLowerCase();
+    const idx = ASSISTANT_RULES.findIndex(
+      (r) => r.q.toLowerCase() === lower || r.q.toLowerCase().includes(lower.replace(/[?.]/g, "")),
+    );
+    return idx >= 0 ? idx : 0;
+  };
+
   return (
     <div className="flex-1 overflow-y-auto px-4 py-4">
       <div className="rounded-md border border-border bg-accent/60 p-3 text-[12px] text-foreground">
@@ -117,6 +168,26 @@ function Body({
           delete anything for you — you keep control.
         </p>
       </div>
+
+      <div className="mt-3">
+        <div className="mb-1.5 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+          <Sparkles className="h-3 w-3" aria-hidden />
+          Starter questions
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {chips.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setOpenIdx(chipToIndex(c))}
+              className="rounded-full border border-border bg-paper px-2.5 py-1 text-[11.5px] text-foreground transition-soft hover:bg-accent"
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
 
       <ol className="mt-4 space-y-2">
         {ASSISTANT_RULES.map((r, i) => {
