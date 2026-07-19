@@ -43,3 +43,7 @@ dist-ssr
 
 # local convenience symlink (machine-specific, self-referential)
 lovable/realdoor-ui
+
+tsconfig.next.tsbuildinfo
+BuggyVerse UIUX Design copy/
+remix_-hacknationproto.zip
