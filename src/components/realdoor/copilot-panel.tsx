@@ -39,6 +39,7 @@ export function CopilotPanel() {
           "hidden lg:flex sticky top-24 h-[calc(100dvh-8rem)] w-full max-w-sm flex-col overflow-hidden rounded-lg border border-border bg-paper",
         )}
       >
+        <GuideAvatar3D heightClassName="h-52" className="rounded-none border-b border-border" />
         <Header />
         <Body openIdx={openIdx} setOpenIdx={setOpenIdx} />
       </aside>
