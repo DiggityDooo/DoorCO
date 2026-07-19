@@ -4,8 +4,14 @@ import { ProfileClient } from "@/components/profile-client";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ doc?: string | string[] }>;
+}) {
   const sessionId = await getSessionId();
   const fields = sessionId ? await getSessionStore().getFields(sessionId) : [];
-  return <ProfileClient initialFields={fields} />;
+  const { doc } = await searchParams;
+  const initialDocId = typeof doc === "string" ? doc : "";
+  return <ProfileClient initialFields={fields} initialDocId={initialDocId} />;
 }

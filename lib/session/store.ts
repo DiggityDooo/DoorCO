@@ -34,6 +34,7 @@ export interface SessionStore {
   getAudit(sessionId: string): Promise<AuditEntry[]>;
   savePacket(sessionId: string, payload: PacketPayload): Promise<void>;
   getPacket(sessionId: string): Promise<PacketPayload | null>;
+  deletePacket(sessionId: string): Promise<void>;
   exportSession(sessionId: string): Promise<{
     fields: ProfileField[];
     results: RuleResult[];

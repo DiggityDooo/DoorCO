@@ -16,7 +16,8 @@ export const FEATURES: Feature[] = [
     purpose: "Read your uploaded synthetic document and pull only allowlisted fields.",
     dataUsed: "Document text (treated as untrusted data, never instructions).",
     proxyRisk: "none",
-    renterControl: "Every extracted value is shown with its source box and can be corrected or rejected.",
+    renterControl:
+      "Every extracted value is shown with its source box and can be corrected or rejected.",
   },
   {
     name: "Income-to-limit math",

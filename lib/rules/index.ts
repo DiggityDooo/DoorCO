@@ -17,6 +17,12 @@ export function compareIncomeToLimit(
   config: DemoConfig,
   input: CalcInput,
 ): CalcOutcome {
+  if (!Number.isInteger(input.householdSize) || input.householdSize <= 0) {
+    return { ok: false, reason: "Household size must be a positive whole number." };
+  }
+  if (!Number.isFinite(input.annualIncome) || input.annualIncome <= 0) {
+    return { ok: false, reason: "Annual income must be a positive number." };
+  }
   const limit = table.get(config.geography, input.householdSize, config.amiThreshold);
   if (limit == null) {
     return { ok: false, reason: "No frozen MTSP limit for this geography/size/AMI%." };
@@ -55,9 +61,7 @@ export function evaluateReadiness(
   config: DemoConfig,
   fields: ProfileField[],
 ): RuleResult {
-  const confirmed = fields.filter(
-    (f) => f.state === "confirmed" || f.state === "corrected",
-  );
+  const confirmed = fields.filter((f) => f.state === "confirmed" || f.state === "corrected");
   const sizeField = confirmed.find((f) => f.key === "householdSize");
   const incomeField = confirmed.find((f) => f.key === "annualIncome");
 
@@ -78,20 +82,21 @@ export function evaluateReadiness(
   });
 
   if (!sizeField || !incomeField) {
-    return abstain(
-      "Cannot compute: confirm household size and annual income first.",
-    );
+    return abstain("Cannot compute: confirm household size and annual income first.");
   }
   const size = Number(sizeField.rawValue);
   const income = Number(incomeField.rawValue);
-  if (!Number.isFinite(size) || !Number.isFinite(income)) {
-    return abstain("Confirmed income or household size is not numeric.");
+  if (!Number.isInteger(size) || size <= 0) {
+    return abstain("Confirmed household size must be a positive whole number.");
+  }
+  if (!Number.isFinite(income) || income <= 0) {
+    return abstain("Confirmed annual income must be a positive number.");
   }
   const outcome = compareIncomeToLimit(table, config, {
     householdSize: size,
     annualIncome: income,
   });
-  if (!outcome.ok)   return abstain(outcome.reason);
+  if (!outcome.ok) return abstain(outcome.reason);
 
   return buildRuleResult(table, config, outcome, {
     householdSize: String(size),

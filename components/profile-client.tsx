@@ -1,15 +1,25 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { confirmField, extractDocument } from "@/app/actions";
 import type { ProfileField } from "@/lib/types";
 import { STATE_LABELS, STATUS_GLYPH } from "@/lib/provenance";
 
-export function ProfileClient({ initialFields }: { initialFields: ProfileField[] }) {
+export function ProfileClient({
+  initialFields,
+  initialDocId = "",
+}: {
+  initialFields: ProfileField[];
+  initialDocId?: string;
+}) {
   const [fields, setFields] = useState<ProfileField[]>(initialFields);
-  const [docId, setDocId] = useState("");
+  const [docId, setDocId] = useState(initialDocId);
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
+
+  useEffect(() => {
+    setDocId(initialDocId);
+  }, [initialDocId]);
 
   async function handleExtract() {
     if (!docId) return;
@@ -58,13 +68,16 @@ export function ProfileClient({ initialFields }: { initialFields: ProfileField[]
     <div>
       <h1>Profile</h1>
       <p className="notice">
-        Upload a synthetic document below. We extract only an allowlisted set of
-        fields and show the exact source text (evidence box) for each. You must
-        confirm or correct every value before it is used downstream.
+        <span className="badge info">Pilot</span> Upload a sample document. We pull only allowed
+        fields and show the exact source text for each. Confirm or fix every value before it is used
+        later.
       </p>
+      <p className="notice">You confirm. A qualified human decides.</p>
 
       <div className="card">
-        <label className="label" htmlFor="doc">Choose a synthetic document</label>
+        <label className="label" htmlFor="doc">
+          Choose a synthetic document
+        </label>
         <input
           id="doc"
           className="input"
@@ -86,13 +99,15 @@ export function ProfileClient({ initialFields }: { initialFields: ProfileField[]
       ) : (
         <ul className="plain">
           {fields.map((f) => (
-            <li key={f.key} className="card">
+            <li key={`${f.sourceDocId}:${f.key}`} className="card">
               <strong>{f.key}</strong>{" "}
               <span className={`badge ${badgeClass(f.state)}`}>
                 {STATUS_GLYPH[f.state]} {STATE_LABELS[f.state]}
               </span>
               <div style={{ marginTop: "0.5rem" }}>
-                <label className="label" htmlFor={`val-${f.key}`}>Value</label>
+                <label className="label" htmlFor={`val-${f.key}`}>
+                  Value
+                </label>
                 <input
                   id={`val-${f.key}`}
                   className="input"
@@ -104,8 +119,8 @@ export function ProfileClient({ initialFields }: { initialFields: ProfileField[]
               </div>
               <p className="evidence">{f.evidenceBox}</p>
               <p className="notice">
-                Confidence: {(f.confidence * 100).toFixed(0)}% · Source: {f.sourceDocId} ·
-                Rule year: {f.ruleYear} · Effective: {f.effectiveDate}
+                Confidence: {(f.confidence * 100).toFixed(0)}% · Source: {f.sourceDocId} · Rule
+                year: {f.ruleYear} · Effective: {f.effectiveDate}
               </p>
               <p>
                 <button

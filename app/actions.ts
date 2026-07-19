@@ -35,12 +35,17 @@ export async function extractDocument(docId: string) {
   await store.saveFields(sessionId, fields);
   await store.appendAudit(sessionId, {
     action: "extract",
-    detail: `Extracted ${fields.length} fields from ${doc.id}` +
+    detail:
+      `Extracted ${fields.length} fields from ${doc.id}` +
       (result.injectionDetected ? " (injection detected, inert)" : ""),
     ruleVersion: `${DEMO_CONFIG.program}/${DEMO_CONFIG.ruleYear}`,
   });
   revalidatePath("/profile");
-  return ok({ fields, droppedKeys: result.droppedKeys, injectionDetected: result.injectionDetected });
+  return ok({
+    fields,
+    droppedKeys: result.droppedKeys,
+    injectionDetected: result.injectionDetected,
+  });
 }
 
 export async function confirmField(key: string, rawValue: string, corrected: boolean) {
@@ -91,7 +96,8 @@ export async function askRule(question: string) {
   if (!match) {
     return ok({
       refusal: true,
-      answer: "I don't have a cited answer for that specific question. Try asking about income limits, what counts as income, or the readiness process.",
+      answer:
+        "I don't have a cited answer for that specific question. Try asking about income limits, what counts as income, or the readiness process.",
       citation: undefined,
       sourceUrl: undefined,
     });
@@ -101,7 +107,12 @@ export async function askRule(question: string) {
     ruleYear: DEMO_CONFIG.ruleYear,
     citation: picked.citation,
   });
-  return ok({ refusal: false, answer: guarded.text, citation: picked.citation, sourceUrl: picked.sourceUrl });
+  return ok({
+    refusal: false,
+    answer: guarded.text,
+    citation: picked.citation,
+    sourceUrl: picked.sourceUrl,
+  });
 }
 
 // --- Prepare: checklist gap + packet export/delete ---
@@ -116,7 +127,11 @@ export async function getChecklist() {
 
 export type PacketPreview = PacketPayload;
 
-export async function previewPacket(): Promise<{ status: "success" | "error"; data?: PacketPreview; error?: string }> {
+export async function previewPacket(): Promise<{
+  status: "success" | "error";
+  data?: PacketPreview;
+  error?: string;
+}> {
   const sessionId = await getOrCreateSessionId();
   const store = getSessionStore();
   const fields = await store.getFields(sessionId);
@@ -143,8 +158,11 @@ export async function deletePacket() {
   const sessionId = await getSessionId();
   if (!sessionId) return err("No active session.");
   const store = getSessionStore();
-  await store.savePacket(sessionId, { fields: [], checklist: [], readinessNote: "deleted" });
-  await store.appendAudit(sessionId, { action: "packet_delete", detail: "Packet deleted by renter" });
+  await store.deletePacket(sessionId);
+  await store.appendAudit(sessionId, {
+    action: "packet_delete",
+    detail: "Packet deleted by renter",
+  });
   revalidatePath("/prepare");
   return ok({ deleted: true });
 }
@@ -167,7 +185,9 @@ export async function deleteSession() {
   try {
     await store.hardDelete(sessionId);
   } catch (error) {
-    return err("Could not delete session: " + (error instanceof Error ? error.message : "unknown error"));
+    return err(
+      "Could not delete session: " + (error instanceof Error ? error.message : "unknown error"),
+    );
   }
   await clearSessionCookie();
   revalidatePath("/profile");
