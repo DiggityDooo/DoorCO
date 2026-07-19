@@ -26,17 +26,28 @@ export const Route = createFileRoute("/prepare")({
 
 function PreparePage() {
   const rd = useRealDoor();
-  useEffect(() => { rd.visitStage("prepare"); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
-  if (!rd.consented) return <Navigate to="/" />;
+  useEffect(() => {
+    rd.visitStage("prepare"); /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
 
   const [preDownloadConfirmed, setPreDownloadConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const counts = useMemo(() => {
-    const c: Record<string, number> = { current: 0, missing: 0, expired: 0, conflicting: 0, unverified: 0 };
-    rd.checklist.forEach((it) => { c[it.status] = (c[it.status] || 0) + 1; });
+    const c: Record<string, number> = {
+      current: 0,
+      missing: 0,
+      expired: 0,
+      conflicting: 0,
+      unverified: 0,
+    };
+    rd.checklist.forEach((it) => {
+      c[it.status] = (c[it.status] || 0) + 1;
+    });
     return c;
   }, [rd.checklist]);
+
+  if (!rd.consented) return <Navigate to="/" />;
 
   const confirmedFields = rd.fields.filter((f) => f.confirmed && FIELD_ALLOWLIST.has(f.id));
   const includedItems = rd.checklist.filter((c) => c.includedInPacket);
@@ -76,7 +87,10 @@ function PreparePage() {
       const doc = new jsPDF({ unit: "pt", format: "letter" });
       const margin = 48;
       let y = margin;
-      const line = (text: string, opts: { size?: number; bold?: boolean; color?: [number, number, number] } = {}) => {
+      const line = (
+        text: string,
+        opts: { size?: number; bold?: boolean; color?: [number, number, number] } = {},
+      ) => {
         const size = opts.size ?? 11;
         doc.setFontSize(size);
         doc.setFont("helvetica", opts.bold ? "bold" : "normal");
@@ -84,13 +98,19 @@ function PreparePage() {
         else doc.setTextColor(30, 34, 60);
         const wrapped = doc.splitTextToSize(text, 515);
         wrapped.forEach((w: string) => {
-          if (y > 740) { doc.addPage(); y = margin; }
+          if (y > 740) {
+            doc.addPage();
+            y = margin;
+          }
           doc.text(w, margin, y);
           y += size + 4;
         });
       };
       line("RealDoor — Application-Readiness Packet", { size: 18, bold: true });
-      line("Synthetic prototype · Not an eligibility decision", { size: 10, color: [110, 110, 130] });
+      line("Synthetic prototype · Not an eligibility decision", {
+        size: 10,
+        color: [110, 110, 130],
+      });
       y += 8;
       line(`Applicant: ${rd.applicantName || "(none)"}`);
       line(`Household size: ${rd.householdSize}`);
@@ -103,7 +123,9 @@ function PreparePage() {
       line(`Effective ${FROZEN.effectiveDate}`);
       y += 6;
       line("Confirmed fields", { size: 12, bold: true });
-      confirmedFields.forEach((f) => line(`• ${f.label}: ${f.value}   (confidence ${f.confidenceLabel})`));
+      confirmedFields.forEach((f) =>
+        line(`• ${f.label}: ${f.value}   (confidence ${f.confidenceLabel})`),
+      );
       if (confirmedFields.length === 0) line("(none confirmed yet)", { color: [140, 140, 155] });
       y += 6;
       line("Checklist", { size: 12, bold: true });
@@ -115,13 +137,22 @@ function PreparePage() {
       line("Citation", { size: 12, bold: true });
       line(`${FROZEN.program}`, { size: 10 });
       line(`Area: ${FROZEN.area}`, { size: 10 });
-      line(`Effective: ${FROZEN.effectiveDate} · Simulation: ${FROZEN.simulationDate}`, { size: 10 });
+      line(`Effective: ${FROZEN.effectiveDate} · Simulation: ${FROZEN.simulationDate}`, {
+        size: 10,
+      });
       line(`Evidence currency: ${FROZEN.evidenceCurrencyDays} days`, { size: 10 });
       line(`${FROZEN.citation}`, { size: 9, color: [110, 110, 130] });
       y += 8;
-      line("RealDoor is assistive, not adjudicative. Nothing was submitted.", { size: 9, color: [110, 110, 130] });
+      line("RealDoor is assistive, not adjudicative. Nothing was submitted.", {
+        size: 9,
+        color: [110, 110, 130],
+      });
       doc.save("realdoor-packet.pdf");
-      rd.logActivity({ stage: "prepare", action: "packet_pdf_exported", meta: { items: includedItems.length } });
+      rd.logActivity({
+        stage: "prepare",
+        action: "packet_pdf_exported",
+        meta: { items: includedItems.length },
+      });
       toast.success("Packet PDF downloaded");
     } finally {
       setBusy(false);
@@ -136,17 +167,20 @@ function PreparePage() {
 
       // Root summary
       zip.file("README.txt", buildPacketText());
-      zip.file("CONTENTS.txt", [
-        "REALDOOR PACKET — FOLDER LAYOUT",
-        "",
-        "  README.txt              Plain-text packet summary",
-        "  packet.json             Machine-readable summary",
-        "  documents/              Per-item document references (metadata only, no PII payloads)",
-        "  citations/              Frozen HUD FY2026 MTSP citation used by this session",
-        "  activity-history/       Redacted action log (no document contents)",
-        "",
-        "Note: This is a synthetic prototype. Nothing was submitted.",
-      ].join("\n"));
+      zip.file(
+        "CONTENTS.txt",
+        [
+          "REALDOOR PACKET — FOLDER LAYOUT",
+          "",
+          "  README.txt              Plain-text packet summary",
+          "  packet.json             Machine-readable summary",
+          "  documents/              Per-item document references (metadata only, no PII payloads)",
+          "  citations/              Frozen HUD FY2026 MTSP citation used by this session",
+          "  activity-history/       Redacted action log (no document contents)",
+          "",
+          "Note: This is a synthetic prototype. Nothing was submitted.",
+        ].join("\n"),
+      );
 
       zip.file(
         "packet.json",
@@ -207,10 +241,7 @@ function PreparePage() {
 
       // activity-history/ — redacted log
       const actDir = zip.folder("activity-history");
-      actDir?.file(
-        "activity.json",
-        JSON.stringify(rd.activity, null, 2),
-      );
+      actDir?.file("activity.json", JSON.stringify(rd.activity, null, 2));
 
       const blob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(blob);
@@ -219,7 +250,11 @@ function PreparePage() {
       a.download = "realdoor-packet.zip";
       a.click();
       URL.revokeObjectURL(url);
-      rd.logActivity({ stage: "prepare", action: "packet_zip_exported", meta: { items: includedItems.length } });
+      rd.logActivity({
+        stage: "prepare",
+        action: "packet_zip_exported",
+        meta: { items: includedItems.length },
+      });
       toast.success("Packet ZIP downloaded");
     } finally {
       setBusy(false);
@@ -234,11 +269,10 @@ function PreparePage() {
         </div>
         <h1 className="ink-title mt-1 text-3xl sm:text-4xl">Assemble your packet</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          A packet is renter-controlled. RealDoor does not send anything to any property.
-          Checklist statuses describe evidence, not eligibility.
+          A packet is renter-controlled. RealDoor does not send anything to any property. Checklist
+          statuses describe evidence, not eligibility.
         </p>
       </header>
-
 
       <ReadinessBanner
         included={includedItems.length}
@@ -259,7 +293,9 @@ function PreparePage() {
         <PaperCard className="p-0">
           <div className="border-b border-border px-4 py-3">
             <div className="text-sm font-medium">Checklist</div>
-            <div className="text-[11px] text-muted-foreground">Include or exclude each item from the packet.</div>
+            <div className="text-[11px] text-muted-foreground">
+              Include or exclude each item from the packet.
+            </div>
           </div>
           <ul className="divide-y divide-border">
             {rd.checklist.map((c) => (
@@ -278,7 +314,9 @@ function PreparePage() {
                     <StatusPill status={c.status} />
                   </div>
                   <p className="mt-0.5 text-xs text-muted-foreground">{c.description}</p>
-                  {c.note && <p className="mt-1 text-[11px] text-muted-foreground">Note: {c.note}</p>}
+                  {c.note && (
+                    <p className="mt-1 text-[11px] text-muted-foreground">Note: {c.note}</p>
+                  )}
                 </div>
               </li>
             ))}
@@ -336,7 +374,7 @@ function PreparePage() {
           <PaperCard className="p-5">
             <div className="flex items-center gap-2">
               <HandHeart className="h-4 w-4 text-primary" aria-hidden />
-              <h2 className="text-sm font-semibold">You did the hard part</h2>
+              <h2 className="text-sm font-semibold">Your selected packet is ready to review</h2>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
               You confirmed the facts. A qualified human at the property, housing authority, or

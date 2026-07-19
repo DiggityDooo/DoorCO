@@ -26,8 +26,7 @@ export const CONTRACT = {
     sourceUrl: "https://www.huduser.gov/portal/datasets/mtsp.html",
     sourceRelease: "FY2026 MTSP Income Limits (frozen)",
     datasetAsOf: "2026-05-01",
-    starterPackCsv:
-      "realdoor-hackathon-starter-pack/data/mtsp_2026_boston_cambridge_quincy.csv",
+    starterPackCsv: "realdoor-hackathon-starter-pack/data/mtsp_2026_boston_cambridge_quincy.csv",
   },
   // Frozen MTSP annual USD limits, household sizes 1..8. Contract only
   // freezes the 50% and 60% bands; other bands are intentionally absent.
@@ -94,8 +93,7 @@ export const CONTRACT = {
     contextBadge: "Boston pilot | FY 2026 rules",
     copilotName: "RealDoor Guide",
     copilotMode: "read-only",
-    avatarAsset:
-      "AI 3D avatar/Meshy_AI_The_Architect_Cyberpu_0719020306_image-to-3d-texture.glb",
+    avatarAsset: "AI 3D avatar/Meshy_AI_The_Architect_Cyberpu_0719020306_image-to-3d-texture.glb",
   },
   citation:
     "HUD FY2026 MTSP Income Limits — Boston-Cambridge-Quincy, MA-NH HUD Metro FMR Area. Effective 2026-05-01. Published by HUD PD&R.",
@@ -112,10 +110,7 @@ export function isFrozenHouseholdSize(n: number): n is FrozenHouseholdSize {
 /** Returns the frozen MTSP limit, or null if the household size is outside
  *  the frozen 1–8 table. Callers MUST abstain in the null case — never
  *  extrapolate a threshold. */
-export function frozenMtspLimit(
-  householdSize: number,
-  band: AmiBandFrozen = 60,
-): number | null {
+export function frozenMtspLimit(householdSize: number, band: AmiBandFrozen = 60): number | null {
   if (!isFrozenHouseholdSize(householdSize)) return null;
   return CONTRACT.mtspLimitsAnnualUsd[householdSize][band];
 }

@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   SCENARIOS,
   FROZEN,
@@ -172,18 +180,28 @@ export function RealDoorProvider({ children }: { children: ReactNode }) {
     setApplicantName(s.applicantName);
   }, []);
 
-  const loadScenario = useCallback((id: ScenarioId) => {
-    const s = SCENARIOS[id];
-    applyScenario(s);
-    logActivity({ stage: "profile", action: "scenario_loaded", meta: { id } });
-  }, [applyScenario, logActivity]);
+  const loadScenario = useCallback(
+    (id: ScenarioId) => {
+      const s = SCENARIOS[id];
+      applyScenario(s);
+      logActivity({ stage: "profile", action: "scenario_loaded", meta: { id } });
+    },
+    [applyScenario, logActivity],
+  );
 
-  const loadDemoDocument = useCallback((fileName?: string) => {
-    // Default demo = HH-003
-    const s = SCENARIOS["HH-003"];
-    applyScenario({ ...s, documentName: fileName || s.documentName });
-    logActivity({ stage: "profile", action: "demo_document_loaded", meta: { name: fileName || s.documentName } });
-  }, [applyScenario, logActivity]);
+  const loadDemoDocument = useCallback(
+    (fileName?: string) => {
+      // Default demo = HH-003
+      const s = SCENARIOS["HH-003"];
+      applyScenario({ ...s, documentName: fileName || s.documentName });
+      logActivity({
+        stage: "profile",
+        action: "demo_document_loaded",
+        meta: { name: fileName || s.documentName },
+      });
+    },
+    [applyScenario, logActivity],
+  );
 
   const value = useMemo<API>(
     () => ({
@@ -235,14 +253,17 @@ export function RealDoorProvider({ children }: { children: ReactNode }) {
       setChecklistStatus: (id, status) =>
         setChecklist((prev) => prev.map((c) => (c.id === id ? { ...c, status } : c))),
       toggleChecklistIncluded: (id) =>
-        setChecklist((prev) => prev.map((c) => (c.id === id ? { ...c, includedInPacket: !c.includedInPacket } : c))),
+        setChecklist((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, includedInPacket: !c.includedInPacket } : c)),
+        ),
 
-      visitStage: (s) => setStagesVisited((prev) => {
-        if (prev.has(s)) return prev;
-        const next = new Set(prev);
-        next.add(s);
-        return next;
-      }),
+      visitStage: (s) =>
+        setStagesVisited((prev) => {
+          if (prev.has(s)) return prev;
+          const next = new Set(prev);
+          next.add(s);
+          return next;
+        }),
       setCopilotOpen,
       toggleTheme: () => {
         setTheme((t) => {
@@ -272,10 +293,37 @@ export function RealDoorProvider({ children }: { children: ReactNode }) {
         setApplicantName("");
         setMunicipalityFilter("");
         setStagesVisited(new Set());
-        setActivity([{ ts: new Date().toISOString(), stage: "privacy", action: "session_deleted" }]);
+        setActivity([
+          { ts: new Date().toISOString(), stage: "privacy", action: "session_deleted" },
+        ]);
       },
     }),
-    [consented, activeScenarioId, documentName, documentType, sizeKb, pages, uploadedAt, ocrEngine, documentDate, evidenceSnippet, fields, householdSize, cityZip, applicantName, checklist, municipalityFilter, theme, copilotOpen, stagesVisited, activity, applyScenario, loadScenario, loadDemoDocument, logActivity],
+    [
+      consented,
+      activeScenarioId,
+      documentName,
+      documentType,
+      sizeKb,
+      pages,
+      uploadedAt,
+      ocrEngine,
+      documentDate,
+      evidenceSnippet,
+      fields,
+      householdSize,
+      cityZip,
+      applicantName,
+      checklist,
+      municipalityFilter,
+      theme,
+      copilotOpen,
+      stagesVisited,
+      activity,
+      applyScenario,
+      loadScenario,
+      loadDemoDocument,
+      logActivity,
+    ],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
@@ -288,7 +336,7 @@ export function useRealDoor() {
 }
 
 export function parseCurrency(v: string): number {
-  const n = Number(v.replace(/[^0-9.\-]/g, ""));
+  const n = Number(v.replace(/[^0-9.-]/g, ""));
   return Number.isFinite(n) ? n : 0;
 }
 

@@ -48,7 +48,23 @@ export function AppShell({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="min-h-dvh bg-background text-foreground relative overflow-x-hidden">
+      {/* Ambient background depth: subtle grids and gradients */}
+      <div className="pointer-events-none fixed inset-0 flex justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,var(--color-primary)_0,transparent_100%)] opacity-[0.03] dark:opacity-[0.08]" />
+        <div
+          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
+          style={{
+            backgroundImage: `linear-gradient(to right, var(--color-foreground) 1px, transparent 1px), linear-gradient(to bottom, var(--color-foreground) 1px, transparent 1px)`,
+            backgroundSize: "40px 40px",
+            maskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, black, transparent)",
+          }}
+        />
+        {/* Soft orbital lines */}
+        <div className="absolute top-[-20%] left-[-10%] w-[120%] h-[120%] rounded-full border border-primary/10 opacity-30 blur-[1px]" />
+        <div className="absolute top-[-10%] left-[-5%] w-[110%] h-[110%] rounded-full border border-foreground/5 opacity-20 blur-[2px]" />
+      </div>
+
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
@@ -61,13 +77,21 @@ export function AppShell({
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2 text-[11px] sm:px-6">
           <span className="badge-persist">
             <Shield className="h-3 w-3" aria-hidden />
-            You confirm. A qualified human decides.
+            RealDoor prepares. Human reviewers decide.
           </span>
-          <span className="badge-persist" title={`Effective ${FROZEN.effectiveDate} · Simulation ${FROZEN.simulationDate} · Evidence ${FROZEN.evidenceCurrencyDays}-day window`}>
+          <span
+            className="badge-persist"
+            title={`Effective ${FROZEN.effectiveDate} · Simulation ${FROZEN.simulationDate} · Evidence ${FROZEN.evidenceCurrencyDays}-day window`}
+          >
             <Info className="h-3 w-3" aria-hidden />
             {FROZEN.contextBadge}
           </span>
-          <span className="badge-persist" style={{ background: "color-mix(in oklab, var(--color-attention) 22%, var(--color-paper))" }}>
+          <span
+            className="badge-persist"
+            style={{
+              background: "color-mix(in oklab, var(--color-attention) 22%, var(--color-paper))",
+            }}
+          >
             Prototype — synthetic documents only
           </span>
         </div>
@@ -163,7 +187,9 @@ export function AppShell({
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "block rounded-md px-3 py-2 text-sm",
-                        active ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/60",
+                        active
+                          ? "bg-accent text-foreground"
+                          : "text-muted-foreground hover:bg-accent/60",
                       )}
                     >
                       {n.label}
@@ -198,9 +224,9 @@ export function AppShell({
       <footer className="mx-auto max-w-[1400px] px-4 pb-10 pt-4 text-xs text-muted-foreground sm:px-6">
         <p>
           RealDoor is <span className="text-foreground">assistive, not adjudicative</span>. It does
-          not approve, deny, rank, or score any application. Frozen source scope:{" "}
-          {FROZEN.program} — {FROZEN.area}, effective {FROZEN.effectiveDate}. Simulation date{" "}
-          {FROZEN.simulationDate}. Evidence currency window {FROZEN.evidenceCurrencyDays} days.
+          not approve, deny, rank, or score any application. Frozen source scope: {FROZEN.program} —{" "}
+          {FROZEN.area}, effective {FROZEN.effectiveDate}. Simulation date {FROZEN.simulationDate}.
+          Evidence currency window {FROZEN.evidenceCurrencyDays} days.
         </p>
       </footer>
     </div>
@@ -254,7 +280,9 @@ function DeleteSessionDialog() {
           </div>
         ) : (
           <div className="space-y-2">
-            <Label htmlFor="confirm-delete">Type <span className="font-mono">DELETE</span> to confirm</Label>
+            <Label htmlFor="confirm-delete">
+              Type <span className="font-mono">DELETE</span> to confirm
+            </Label>
             <Input
               id="confirm-delete"
               value={confirmText}
@@ -264,9 +292,19 @@ function DeleteSessionDialog() {
           </div>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={() => { setOpen(false); reset(); }}>Cancel</Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setOpen(false);
+              reset();
+            }}
+          >
+            Cancel
+          </Button>
           {step === 1 ? (
-            <Button variant="destructive" onClick={() => setStep(2)}>Continue</Button>
+            <Button variant="destructive" onClick={() => setStep(2)}>
+              Continue
+            </Button>
           ) : (
             <Button
               variant="destructive"

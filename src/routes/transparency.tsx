@@ -10,8 +10,7 @@ export const Route = createFileRoute("/transparency")({
       { title: "Transparency — RealDoor" },
       {
         name: "description",
-        content:
-          "Frozen scope, boundary of the tool, and the questions RealDoor will not answer.",
+        content: "Frozen scope, boundary of the tool, and the questions RealDoor will not answer.",
       },
     ],
   }),
@@ -41,12 +40,30 @@ function TransparencyPage() {
             <h2 className="text-sm font-semibold">Frozen source scope</h2>
           </div>
           <ul className="mt-3 space-y-1 text-sm">
-            <li><span className="text-muted-foreground">Program: </span>{FROZEN.program}</li>
-            <li><span className="text-muted-foreground">Area: </span>{FROZEN.area}</li>
-            <li><span className="text-muted-foreground">Effective: </span>{FROZEN.effectiveDate}</li>
-            <li><span className="text-muted-foreground">Simulation date: </span>{FROZEN.simulationDate}</li>
-            <li><span className="text-muted-foreground">Evidence currency: </span>{FROZEN.evidenceCurrencyDays} days</li>
-            <li><span className="text-muted-foreground">Published by: </span>{FROZEN.publishedBy}</li>
+            <li>
+              <span className="text-muted-foreground">Program: </span>
+              {FROZEN.program}
+            </li>
+            <li>
+              <span className="text-muted-foreground">Area: </span>
+              {FROZEN.area}
+            </li>
+            <li>
+              <span className="text-muted-foreground">Effective: </span>
+              {FROZEN.effectiveDate}
+            </li>
+            <li>
+              <span className="text-muted-foreground">Simulation date: </span>
+              {FROZEN.simulationDate}
+            </li>
+            <li>
+              <span className="text-muted-foreground">Evidence currency: </span>
+              {FROZEN.evidenceCurrencyDays} days
+            </li>
+            <li>
+              <span className="text-muted-foreground">Published by: </span>
+              {FROZEN.publishedBy}
+            </li>
           </ul>
           <p className="mt-3 text-xs text-muted-foreground">{FROZEN.citation}</p>
         </PaperCard>
@@ -87,8 +104,8 @@ function TransparencyPage() {
             <h2 className="text-sm font-semibold">Human handoff</h2>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            Bring your packet to the property, housing authority, or a nonprofit navigator. They
-            are the ones who verify, decide, and communicate outcomes.
+            Bring your packet to the property, housing authority, or a nonprofit navigator. They are
+            the ones who verify, decide, and communicate outcomes.
           </p>
         </PaperCard>
       </div>

@@ -9,7 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle2, Edit3, AlertCircle, FileText, Search } from "lucide-react";
 import { useRealDoor } from "@/lib/realdoor-store";
-import { FIELD_ALLOWLIST, FROZEN, sanitizeEvidenceSnippet, type ExtractedField } from "@/lib/realdoor-data";
+import {
+  FIELD_ALLOWLIST,
+  FROZEN,
+  sanitizeEvidenceSnippet,
+  type ExtractedField,
+} from "@/lib/realdoor-data";
 import { isEvidenceExpired } from "@/lib/realdoor-store";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -35,21 +40,22 @@ function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!rd.consented || !rd.documentName) {
-    return <Navigate to="/" />;
-  }
-
   const visibleFields = useMemo(
     () => rd.fields.filter((f) => FIELD_ALLOWLIST.has(f.id)),
     [rd.fields],
   );
+
+  const [highlightFieldId, setHighlightFieldId] = useState<string | null>(null);
+
+  if (!rd.consented || !rd.documentName) {
+    return <Navigate to="/" />;
+  }
+
   const confirmedCount = visibleFields.filter((f) => f.confirmed).length;
   const total = visibleFields.length;
   const pct = total ? Math.round((confirmedCount / total) * 100) : 0;
   const allReviewed = confirmedCount === total;
   const expired = isEvidenceExpired(rd.documentDate);
-
-  const [highlightFieldId, setHighlightFieldId] = useState<string | null>(null);
 
   return (
     <AppShell>
@@ -60,24 +66,14 @@ function ProfilePage() {
           </div>
           <h1 className="ink-title mt-1 text-3xl sm:text-4xl">Review what we read</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            RealDoor extracts an allowlist of fields from your synthetic document. Confidence is
-            an extraction-quality label, not an approval signal. Confirm or edit every field.
+            RealDoor extracts an allowlist of fields from your synthetic document. Confidence is an
+            extraction-quality label, not an approval signal. Confirm or edit every field.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="border-primary/40 bg-primary/10 text-foreground">
             {confirmedCount}/{total} confirmed · {pct}%
           </Badge>
-          <Button
-            size="sm"
-            disabled={!allReviewed || rd.fields.every((f) => f.confirmed)}
-            onClick={() => {
-              rd.confirmAll();
-              toast.success("All fields confirmed");
-            }}
-          >
-            Confirm all reviewed
-          </Button>
         </div>
       </header>
 
@@ -110,9 +106,9 @@ function ProfilePage() {
             <div>
               <div className="font-medium">Unrelated content excluded from this document</div>
               <div className="text-xs text-muted-foreground">
-                {excludedLineCount} {excludedLineCount === 1 ? "line was" : "lines were"} treated
-                as inert data and left out of extraction. Document text is never used as
-                instructions. No user action is required and no field was affected.
+                {excludedLineCount} {excludedLineCount === 1 ? "line was" : "lines were"} treated as
+                inert data and left out of extraction. Document text is never used as instructions.
+                No user action is required and no field was affected.
               </div>
             </div>
           </div>
@@ -142,14 +138,18 @@ function ProfilePage() {
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-paper p-4 text-sm">
         <div className="flex items-center gap-2">
-          <Label htmlFor="hh" className="whitespace-nowrap">Household size</Label>
+          <Label htmlFor="hh" className="whitespace-nowrap">
+            Household size
+          </Label>
           <Input
             id="hh"
             type="number"
             min={1}
             max={8}
             value={rd.householdSize}
-            onChange={(e) => rd.setHouseholdSize(Math.min(8, Math.max(1, Number(e.target.value) || 1)))}
+            onChange={(e) =>
+              rd.setHouseholdSize(Math.min(8, Math.max(1, Number(e.target.value) || 1)))
+            }
             className="w-20"
             aria-describedby="hh-hint"
           />
@@ -176,22 +176,67 @@ function DocumentPanel({
   onHighlight: (id: string | null) => void;
 }) {
   const rd = useRealDoor();
-  const highlighted = rd.fields.find((f) => f.id === highlightFieldId);
 
   const sanitized = useMemo(
     () => sanitizeEvidenceSnippet(rd.evidenceSnippet).text,
     [rd.evidenceSnippet],
   );
 
-  const rendered = useMemo(() => {
-    if (!highlighted) return sanitized;
-    const idx = sanitized.indexOf(highlighted.evidence.text);
-    if (idx < 0) return sanitized;
-    const before = sanitized.slice(0, idx);
-    const match = sanitized.slice(idx, idx + highlighted.evidence.text.length);
-    const after = sanitized.slice(idx + highlighted.evidence.text.length);
-    return { before, match, after };
-  }, [highlighted, sanitized]);
+  const segments = useMemo(() => {
+    const occurrences: { start: number; end: number; fieldId: string; text: string }[] = [];
+
+    for (const f of rd.fields) {
+      if (!FIELD_ALLOWLIST.has(f.id)) continue;
+      const t = f.evidence.text;
+      if (!t) continue;
+
+      let idx = sanitized.indexOf(t);
+      while (idx >= 0) {
+        if (!occurrences.some((o) => o.start === idx)) {
+          occurrences.push({
+            start: idx,
+            end: idx + t.length,
+            fieldId: f.id,
+            text: t,
+          });
+        }
+        idx = sanitized.indexOf(t, idx + 1);
+      }
+    }
+
+    occurrences.sort((a, b) => a.start - b.start);
+
+    const result: { text: string; fieldId?: string }[] = [];
+    let lastIdx = 0;
+
+    for (const occ of occurrences) {
+      if (occ.start >= lastIdx) {
+        if (occ.start > lastIdx) {
+          result.push({ text: sanitized.slice(lastIdx, occ.start) });
+        }
+        result.push({ text: sanitized.slice(occ.start, occ.end), fieldId: occ.fieldId });
+        lastIdx = occ.end;
+      }
+    }
+
+    if (lastIdx < sanitized.length) {
+      result.push({ text: sanitized.slice(lastIdx) });
+    }
+
+    return result;
+  }, [rd.fields, sanitized]);
+
+  const scrollToField = (fieldId: string) => {
+    onHighlight(fieldId);
+    const el = document.getElementById(`field-card-${fieldId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-2", "ring-primary", "scale-[1.01]", "bg-accent/80");
+      setTimeout(() => {
+        el.classList.remove("ring-2", "ring-primary", "scale-[1.01]", "bg-accent/80");
+      }, 1200);
+    }
+  };
 
   return (
     <PaperCard className="p-0">
@@ -215,24 +260,39 @@ function DocumentPanel({
         onMouseLeave={() => onHighlight(null)}
       >
         <pre className="whitespace-pre-wrap break-words">
-          {typeof rendered === "string" ? (
-            rendered
-          ) : (
-            <>
-              {rendered.before}
-              <mark className="rounded bg-primary/25 px-0.5 py-0.5 text-foreground">
-                {rendered.match}
-              </mark>
-              {rendered.after}
-            </>
-          )}
+          {segments.map((seg, i) => {
+            if (!seg.fieldId) {
+              return <span key={i}>{seg.text}</span>;
+            }
+            const isHighlighted = highlightFieldId === seg.fieldId;
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => scrollToField(seg.fieldId!)}
+                onMouseEnter={() => onHighlight(seg.fieldId!)}
+                className={cn(
+                  "cursor-pointer rounded font-mono px-1 py-0.5 transition-all text-left inline-block my-0.5",
+                  isHighlighted
+                    ? "bg-primary/20 text-foreground ring-2 ring-primary scale-[1.02] shadow font-semibold"
+                    : "bg-primary/5 hover:bg-primary/15 hover:ring-1 hover:ring-primary/40 border border-dashed border-primary/20",
+                )}
+                title={`Click to focus matching field: ${seg.fieldId}`}
+              >
+                {seg.text}
+              </button>
+            );
+          })}
         </pre>
       </div>
 
       <div className="border-t border-border px-4 py-3 text-[11px] text-muted-foreground">
         <div className="flex items-start gap-1.5">
           <Search className="mt-0.5 h-3 w-3" aria-hidden />
-          Hover a field on the right to highlight its evidence in the document.
+          <span>
+            Click a highlighted document segment to focus its extracted field card, or hover the
+            cards directly.
+          </span>
         </div>
       </div>
     </PaperCard>
@@ -259,12 +319,7 @@ function FieldsPanel({
       </div>
       <ul className="divide-y divide-border">
         {list.map((f) => (
-          <FieldRow
-            key={f.id}
-            f={f}
-            highlighted={highlight === f.id}
-            onHover={onHover}
-          />
+          <FieldRow key={f.id} f={f} highlighted={highlight === f.id} onHover={onHover} />
         ))}
       </ul>
     </PaperCard>
@@ -286,27 +341,33 @@ function FieldRow({
 
   return (
     <li
+      id={`field-card-${f.id}`}
       onMouseEnter={() => onHover(f.id)}
       onFocus={() => onHover(f.id)}
       className={cn(
-        "px-4 py-3 transition-soft",
-        highlighted && "bg-accent/60",
+        "px-4 py-4 transition-all scroll-mt-24 border-l-2",
+        highlighted ? "bg-accent/40 border-l-primary" : "border-l-transparent",
       )}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
               {f.label}
             </span>
             <ConfidencePill f={f} />
             {f.confirmed && (
               <span
                 aria-label="Confirmed by you"
-                className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-success)]/10 px-2 py-0.5 text-[10px] font-medium text-[color:var(--color-success)] ring-1 ring-[color:var(--color-success)]/40"
+                className="inline-flex items-center gap-1 rounded bg-[color:var(--color-success)]/10 px-2 py-0.5 text-[10px] font-medium text-[color:var(--color-success)] border border-[color:var(--color-success)]/30"
               >
                 <CheckCircle2 className="h-3 w-3" aria-hidden />
                 Confirmed
+              </span>
+            )}
+            {f.id === "monthly_benefit" && rd.activeScenarioId === "HH-003" && (
+              <span className="inline-flex items-center gap-1 rounded bg-[color:var(--color-attention)]/15 px-2 py-0.5 text-[10px] font-semibold text-[color:var(--color-attention-foreground)] border border-[color:var(--color-attention)]/30 animate-pulse">
+                Demo correction moment
               </span>
             )}
           </div>
@@ -318,15 +379,18 @@ function FieldRow({
               className="mt-2 h-8 max-w-xs text-sm"
             />
           ) : (
-            <div className="mt-1 text-[15px] font-medium text-foreground">{f.value}</div>
+            <div className="mt-1 text-[15px] font-semibold text-foreground">{f.value}</div>
           )}
           {f.suggested && !f.confirmed && (
             <button
               type="button"
-              className="mt-1 text-[11px] text-primary underline underline-offset-2"
-              onClick={() => rd.setField(f.id, { value: f.suggested! })}
+              className="mt-1.5 text-xs text-primary font-medium hover:underline block"
+              onClick={() => {
+                rd.setField(f.id, { value: f.suggested! });
+                setDraft(f.suggested!);
+              }}
             >
-              Suggested: {f.suggested}
+              Suggested correction: {f.suggested}
             </button>
           )}
         </div>
@@ -344,7 +408,14 @@ function FieldRow({
               >
                 Save
               </Button>
-              <Button size="sm" variant="outline" onClick={() => { setDraft(f.value); setEditing(false); }}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setDraft(f.value);
+                  setEditing(false);
+                }}
+              >
                 Cancel
               </Button>
             </>
@@ -372,8 +443,8 @@ function FieldRow({
           )}
         </div>
       </div>
-      <div className="mt-2 text-[11px] text-muted-foreground">
-        Evidence · page {f.evidence.page}, line {f.evidence.line} · &ldquo;{f.evidence.text}&rdquo;
+      <div className="mt-2 text-[11px] font-mono text-muted-foreground bg-muted/30 p-1.5 rounded border border-border/40 inline-block">
+        Page {f.evidence.page}, Line {f.evidence.line} · &ldquo;{f.evidence.text}&rdquo;
       </div>
     </li>
   );
@@ -382,18 +453,22 @@ function FieldRow({
 function ConfidencePill({ f }: { f: ExtractedField }) {
   const label = f.confidenceLabel;
   const pct = Math.round(f.confidence * 100);
-  const cls =
-    label === "High"
-      ? "bg-[color:var(--color-success)]/10 text-[color:var(--color-success)] ring-[color:var(--color-success)]/40"
-      : label === "Medium"
-        ? "bg-accent text-accent-foreground ring-border"
-        : "bg-attention/20 text-foreground ring-attention/50";
   return (
     <span
-      className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1", cls)}
+      className="inline-flex items-center gap-1.5 rounded bg-muted/40 px-1.5 py-0.5 text-[10px] font-mono font-medium text-muted-foreground border border-border/50 shadow-sm"
       title="Extraction quality — not an approval signal"
     >
-      Confidence: {label} · {pct}%
+      <span
+        className={cn(
+          "h-1.5 w-1.5 rounded-full",
+          label === "High"
+            ? "bg-[color:var(--color-success)]"
+            : label === "Medium"
+              ? "bg-[color:var(--color-warning)]"
+              : "bg-[color:var(--color-attention)]",
+        )}
+      />
+      {label} · {pct}%
     </span>
   );
 }

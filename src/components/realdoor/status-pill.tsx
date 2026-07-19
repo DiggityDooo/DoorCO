@@ -1,11 +1,15 @@
 import { CheckCircle2, FileWarning, AlertTriangle, HelpCircle, AlertCircle } from "lucide-react";
 import type { ChecklistStatus } from "@/lib/realdoor-data";
 
-const MAP: Record<ChecklistStatus, { label: string; icon: typeof CheckCircle2; className: string }> = {
+const MAP: Record<
+  ChecklistStatus,
+  { label: string; icon: typeof CheckCircle2; className: string }
+> = {
   current: {
     label: "Current",
     icon: CheckCircle2,
-    className: "bg-[color:var(--color-success)]/10 text-[color:var(--color-success)] ring-1 ring-[color:var(--color-success)]/40",
+    className:
+      "bg-[color:var(--color-success)]/10 text-[color:var(--color-success)] ring-1 ring-[color:var(--color-success)]/40",
   },
   missing: {
     label: "Missing",
@@ -35,7 +39,8 @@ export function StatusPill({ status }: { status: ChecklistStatus }) {
   return (
     <span
       className={
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium " + cfg.className
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium " +
+        cfg.className
       }
       aria-label={`Status: ${cfg.label}`}
     >

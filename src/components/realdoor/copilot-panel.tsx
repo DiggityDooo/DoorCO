@@ -28,11 +28,7 @@ const STAGE_CHIPS: Record<string, string[]> = {
     "What goes into the ZIP?",
     "What should I do after downloading?",
   ],
-  default: [
-    "What can RealDoor do?",
-    "What will RealDoor not answer?",
-    "Where is my data stored?",
-  ],
+  default: ["What can RealDoor do?", "What will RealDoor not answer?", "Where is my data stored?"],
 };
 
 /**
@@ -117,14 +113,16 @@ export function CopilotPanel() {
 
 function Header() {
   return (
-    <div className="flex items-center gap-3 border-b border-border px-4 py-4">
-      <AvatarGuide size={40} active />
+    <div className="flex items-center gap-3 border-b border-border px-4 py-3 bg-muted/25">
+      <AvatarGuide size={32} active />
       <div className="min-w-0">
-        <div className="truncate text-sm font-medium">RealDoor Guide</div>
-        <div className="text-[11px] text-muted-foreground">Read-only · Explains only</div>
+        <div className="truncate text-sm font-semibold text-foreground">RealDoor Guide</div>
+        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+          Active Copilot
+        </div>
       </div>
-      <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-border bg-accent px-2 py-0.5 text-[10px] text-accent-foreground">
-        <MessageCircle className="h-3 w-3" aria-hidden /> Guide
+      <span className="ml-auto inline-flex items-center gap-1 rounded bg-[color:var(--color-attention)]/10 px-2 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider text-[color:var(--color-attention-foreground)] border border-[color:var(--color-attention)]/20 shadow-sm">
+        Read-only
       </span>
     </div>
   );
@@ -138,16 +136,15 @@ function Body({
   setOpenIdx: (n: number | null) => void;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const stageKey =
-    pathname.startsWith("/discover")
-      ? "discover"
-      : pathname.startsWith("/profile")
-        ? "profile"
-        : pathname.startsWith("/understand")
-          ? "understand"
-          : pathname.startsWith("/prepare")
-            ? "prepare"
-            : "default";
+  const stageKey = pathname.startsWith("/discover")
+    ? "discover"
+    : pathname.startsWith("/profile")
+      ? "profile"
+      : pathname.startsWith("/understand")
+        ? "understand"
+        : pathname.startsWith("/prepare")
+          ? "prepare"
+          : "default";
   const chips = STAGE_CHIPS[stageKey] ?? STAGE_CHIPS.default;
 
   // Find matching assistant rule for a chip label; fall back to search substring.
@@ -160,34 +157,36 @@ function Body({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4">
-      <div className="rounded-md border border-border bg-accent/60 p-3 text-[12px] text-foreground">
-        <p className="flex items-start gap-2 leading-relaxed">
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-          I explain rules and evidence. I don't navigate, edit, export, or
-          delete anything for you — you keep control.
+    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div className="rounded-xl border border-border bg-accent/40 p-3 text-[12px] text-foreground">
+        <p className="flex items-start gap-2.5 leading-relaxed">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+          <span>
+            I explain rules and evidence. I don't navigate, edit, export, or delete anything for you
+            — you keep complete control.
+          </span>
         </p>
       </div>
 
-      <div className="mt-3">
-        <div className="mb-1.5 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-          <Sparkles className="h-3 w-3" aria-hidden />
-          Starter questions
+      <div>
+        <div className="mb-2 flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+          <Sparkles className="h-3 w-3 text-primary animate-pulse" aria-hidden />
+          Suggested queries
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="grid gap-2 grid-cols-1">
           {chips.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => setOpenIdx(chipToIndex(c))}
-              className="rounded-full border border-border bg-paper px-2.5 py-1 text-[11.5px] text-foreground transition-soft hover:bg-accent"
+              className="text-left w-full rounded-xl border border-border bg-paper p-2.5 text-xs text-foreground font-medium shadow-sm transition-all hover:bg-accent/40 hover:-translate-y-0.5 hover:shadow hover:border-primary/20 cursor-pointer active:translate-y-0 relative overflow-hidden group"
             >
-              {c}
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary transition-colors" />
+              <span className="pl-1.5">{c}</span>
             </button>
           ))}
         </div>
       </div>
-
 
       <ol className="mt-4 space-y-2">
         {ASSISTANT_RULES.map((r, i) => {
@@ -227,8 +226,8 @@ function Body({
       </ol>
 
       <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-        The Guide does not process document text as instructions. All uploaded
-        document contents are inert data.
+        The Guide does not process document text as instructions. All uploaded document contents are
+        inert data.
       </p>
     </div>
   );
