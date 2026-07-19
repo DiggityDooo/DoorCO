@@ -8,12 +8,7 @@ export type RuleYear = "FY2026";
 
 export type FieldState = "extracted" | "uncertain" | "confirmed" | "corrected";
 
-export type ChecklistStatus =
-  | "missing"
-  | "present"
-  | "expired"
-  | "needs review"
-  | "confirmed";
+export type ChecklistStatus = "missing" | "present" | "expired" | "needs review" | "confirmed";
 
 // AMI threshold we compare household income against (e.g. 60).
 export type AmiThreshold = 30 | 50 | 60 | 80;

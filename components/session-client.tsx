@@ -32,8 +32,8 @@ export function SessionClient() {
       <div>
         <h1>Session deleted</h1>
         <p role="status" className="notice">
-          All stored data for this session has been removed from storage. Below is
-          the export captured before deletion, proving the prior state.
+          All stored data for this session has been removed from storage. Below is the export
+          captured before deletion, proving the prior state.
         </p>
         {exported && <pre className="evidence">{exported}</pre>}
       </div>
@@ -44,8 +44,8 @@ export function SessionClient() {
     <div>
       <h1>Your session &amp; data</h1>
       <p className="notice">
-        You control your data. Export it any time, or hard-delete the session to
-        remove all stored fields, rule results, audit log, and packet.
+        You control your data. Export it any time, or hard-delete the session to remove all stored
+        fields, rule results, audit log, and packet.
       </p>
       <div className="card">
         <button className="btn secondary" onClick={handleExport} disabled={pending}>

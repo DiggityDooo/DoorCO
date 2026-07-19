@@ -34,9 +34,7 @@ export class MemorySessionStore implements SessionStore {
   async setFieldState(sessionId: string, key: string, state: FieldState, rawValue?: string) {
     const list = this.fields.get(sessionId) ?? [];
     const next = list.map((f) =>
-      f.key === key
-        ? { ...f, state, rawValue: rawValue ?? f.rawValue }
-        : f,
+      f.key === key ? { ...f, state, rawValue: rawValue ?? f.rawValue } : f,
     );
     this.fields.set(sessionId, next);
   }
@@ -67,6 +65,10 @@ export class MemorySessionStore implements SessionStore {
 
   async getPacket(sessionId: string): Promise<PacketPayload | null> {
     return this.packets.get(sessionId) ?? null;
+  }
+
+  async deletePacket(sessionId: string) {
+    this.packets.delete(sessionId);
   }
 
   async exportSession(sessionId: string) {

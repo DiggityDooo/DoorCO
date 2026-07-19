@@ -5,8 +5,11 @@ import type { DemoConfig } from "@/data/config";
 import { PROFILE_FIELD_KEYS, type ProfileFieldKey } from "../types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
+const jsonCache = new Map<string, unknown>();
 
 function readJson(name: string): unknown {
+  const cached = jsonCache.get(name);
+  if (cached !== undefined) return cached;
   const file = path.join(DATA_DIR, name);
   if (!fs.existsSync(file)) {
     throw new Error(
@@ -14,7 +17,9 @@ function readJson(name: string): unknown {
         `add a smoke fixture or the real pack before running.`,
     );
   }
-  return JSON.parse(fs.readFileSync(file, "utf8"));
+  const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+  jsonCache.set(name, parsed);
+  return parsed;
 }
 
 const configSchema = z.object({
@@ -57,8 +62,7 @@ export function loadMtsp(): MtspTable {
       const bySize = limits[geography];
       if (!bySize) return null;
       const byAmi = bySize[String(householdSize)] as
-        | Partial<Record<"30" | "50" | "60" | "80", number>>
-        | undefined;
+        Partial<Record<"30" | "50" | "60" | "80", number>> | undefined;
       if (!byAmi) return null;
       return byAmi[String(amiPercent) as "30" | "50" | "60" | "80"] ?? null;
     },

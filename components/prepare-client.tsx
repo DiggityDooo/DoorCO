@@ -19,6 +19,10 @@ function statusBadgeClass(s: string): string {
   }
 }
 
+function needsAttention(status: string): boolean {
+  return status !== "present" && status !== "confirmed";
+}
+
 export function PrepareClient() {
   const [packet, setPacket] = useState<PacketPreview | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -29,13 +33,11 @@ export function PrepareClient() {
       const res = await previewPacket();
       if (res.status === "success" && res.data) {
         setPacket(res.data);
-        const missing = res.data.checklist.filter(
-          (c) => c.status === "missing" || c.status === "expired",
-        );
+        const unresolved = res.data.checklist.filter((c) => needsAttention(c.status));
         setMsg(
-          missing.length
-            ? `${missing.length} item(s) flagged missing or expired. Review your packet.`
-            : "All reviewed items present.",
+          unresolved.length
+            ? `${unresolved.length} item(s) still need attention. You may still download the packet — status is readiness, not approval.`
+            : "All checklist items are present. Download when ready.",
         );
       }
     });
@@ -46,7 +48,7 @@ export function PrepareClient() {
       const res = await deletePacket();
       if (res.status === "success") {
         setPacket(null);
-        setMsg("Packet deleted. No copy is retained on the server.");
+        setMsg("Packet deleted. No packet copy is retained in this session.");
       }
     });
   }
@@ -62,20 +64,18 @@ export function PrepareClient() {
     URL.revokeObjectURL(url);
   }
 
-  const gapItems = packet?.checklist.filter(
-    (c) => c.status === "missing" || c.status === "expired",
-  );
+  const gapItems = packet?.checklist.filter((c) => needsAttention(c.status));
 
   return (
     <div>
       <h1>Prepare your packet</h1>
       <p className="notice">
-        We compare your confirmed profile to the document checklist and flag what
-        is missing, expired, present, or needs review. Status is about
-        <strong> readiness</strong>, never approval. The packet is
-        <strong> renter-controlled</strong>: you preview, edit, download, and
-        delete it. It is never auto-submitted to a property or provider.
+        <span className="badge info">Pilot</span> We check your confirmed profile against a document
+        list and flag what is missing, outdated, present, or needs review. That is{" "}
+        <strong>readiness</strong>, not approval. You preview, download, and delete — nothing is
+        sent for you.
       </p>
+      <p className="notice">You confirm. A qualified human decides.</p>
 
       <div className="card">
         <button className="btn" onClick={handlePreview} disabled={pending}>
@@ -99,8 +99,9 @@ export function PrepareClient() {
         <div className="card">
           <h2>Document readiness</h2>
           {gapItems && gapItems.length > 0 && (
-            <p className="error">
-              Flagged: {gapItems.map((g) => g.label).join(", ")}
+            <p className="error" role="status">
+              Needs review (export allowed):{" "}
+              {gapItems.map((g) => `${g.label} [${g.status}]`).join(", ")}
             </p>
           )}
           <ul className="plain">
@@ -117,8 +118,7 @@ export function PrepareClient() {
           <ul className="plain">
             {packet.fields.map((f) => (
               <li key={f.key}>
-                <strong>{f.key}</strong>: {f.rawValue}{" "}
-                <span className="badge info">{f.state}</span>
+                <strong>{f.key}</strong>: {f.rawValue} <span className="badge info">{f.state}</span>
               </li>
             ))}
           </ul>

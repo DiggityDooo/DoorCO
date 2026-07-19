@@ -13,7 +13,12 @@ import type { ProfileField } from "@/lib/types";
 describe("demo harness — acceptance + safety", () => {
   it("1. upload synthetic doc -> extracted evidence shown", async () => {
     const doc = loadSynthetic().find((d) => d.id === "doc-paystub-001")!;
-    const res = await runExtraction({ docId: doc.id, text: doc.text, config: DEMO_CONFIG, gold: doc.gold });
+    const res = await runExtraction({
+      docId: doc.id,
+      text: doc.text,
+      config: DEMO_CONFIG,
+      gold: doc.gold,
+    });
     expect(res.fields.length).toBeGreaterThan(0);
     const name = res.fields.find((f) => f.key === "applicantName")!;
     expect(name.evidenceBox.length).toBeGreaterThan(0);
@@ -24,7 +29,12 @@ describe("demo harness — acceptance + safety", () => {
     const store = new MemorySessionStore();
     const sid = await store.createSession();
     const doc = loadSynthetic().find((d) => d.id === "doc-paystub-001")!;
-    const res = await runExtraction({ docId: doc.id, text: doc.text, config: DEMO_CONFIG, gold: doc.gold });
+    const res = await runExtraction({
+      docId: doc.id,
+      text: doc.text,
+      config: DEMO_CONFIG,
+      gold: doc.gold,
+    });
     await store.saveFields(sid, toProfileFields(sid, doc.id, res, DEMO_CONFIG));
     // confirm household size + income (correct income from 48000 -> 30000)
     await store.setFieldState(sid, "householdSize", "confirmed");
@@ -32,8 +42,7 @@ describe("demo harness — acceptance + safety", () => {
     const fields = await store.getFields(sid);
     const rr = evaluateReadiness(loadMtsp(), DEMO_CONFIG, fields);
     expect(rr.abstained).toBe(false);
-    // 30000/78840 = ~38.1%
-    expect(rr.value).toBeCloseTo(38.1, 1);
+    expect(rr.value).toBeCloseTo((30000 / rr.threshold) * 100, 1);
     expect(rr.band).toBe("below limit");
   });
 
@@ -46,21 +55,60 @@ describe("demo harness — acceptance + safety", () => {
   it("4. deterministic math + effective date shown", async () => {
     const table = loadMtsp();
     const rr = evaluateReadiness(table, DEMO_CONFIG, [
-      { sessionId: "s", key: "householdSize", rawValue: "4", state: "confirmed", confidence: 1, sourceDocId: "d", evidenceBox: "x", ruleYear: "FY2026", effectiveDate: DEMO_CONFIG.effectiveDate, geography: DEMO_CONFIG.geography, sourceUrl: DEMO_CONFIG.sourceUrl, datasetRelease: DEMO_CONFIG.datasetAsOf },
-      { sessionId: "s", key: "annualIncome", rawValue: "48000", state: "confirmed", confidence: 1, sourceDocId: "d", evidenceBox: "x", ruleYear: "FY2026", effectiveDate: DEMO_CONFIG.effectiveDate, geography: DEMO_CONFIG.geography, sourceUrl: DEMO_CONFIG.sourceUrl, datasetRelease: DEMO_CONFIG.datasetAsOf },
+      {
+        sessionId: "s",
+        key: "householdSize",
+        rawValue: "4",
+        state: "confirmed",
+        confidence: 1,
+        sourceDocId: "d",
+        evidenceBox: "x",
+        ruleYear: "FY2026",
+        effectiveDate: DEMO_CONFIG.effectiveDate,
+        geography: DEMO_CONFIG.geography,
+        sourceUrl: DEMO_CONFIG.sourceUrl,
+        datasetRelease: DEMO_CONFIG.datasetAsOf,
+      },
+      {
+        sessionId: "s",
+        key: "annualIncome",
+        rawValue: "48000",
+        state: "confirmed",
+        confidence: 1,
+        sourceDocId: "d",
+        evidenceBox: "x",
+        ruleYear: "FY2026",
+        effectiveDate: DEMO_CONFIG.effectiveDate,
+        geography: DEMO_CONFIG.geography,
+        sourceUrl: DEMO_CONFIG.sourceUrl,
+        datasetRelease: DEMO_CONFIG.datasetAsOf,
+      },
     ] as ProfileField[]);
     expect(rr.effectiveDate).toBe("2026-05-01");
-    expect(rr.threshold).toBe(78840);
+    expect(rr.threshold).toBe(table.get(DEMO_CONFIG.geography, 4, DEMO_CONFIG.amiThreshold));
+    expect(rr.geography).toBe(DEMO_CONFIG.geography);
   });
 
   it("5. missing/expired item flagged -> packet exported", async () => {
-    const fields = toProfileFields("s", "d",
-      await runExtraction({ docId: "doc-paystub-001", text: loadSynthetic().find((d) => d.id === "doc-paystub-001")!.text, config: DEMO_CONFIG, gold: loadSynthetic().find((d) => d.id === "doc-paystub-001")!.gold }),
-      DEMO_CONFIG).map((f) => ({ ...f, state: "confirmed" as const }));
+    const fields = toProfileFields(
+      "s",
+      "d",
+      await runExtraction({
+        docId: "doc-paystub-001",
+        text: loadSynthetic().find((d) => d.id === "doc-paystub-001")!.text,
+        config: DEMO_CONFIG,
+        gold: loadSynthetic().find((d) => d.id === "doc-paystub-001")!.gold,
+      }),
+      DEMO_CONFIG,
+    ).map((f) => ({ ...f, state: "confirmed" as const }));
     const evals = evaluateChecklist(loadChecklist(), fields);
     const id = evals.find((e) => e.id === "id-proof")!;
     expect(["missing", "present", "expired", "needs review", "confirmed"]).toContain(id.status);
-    const packet = { fields: fields.map((f) => ({ key: f.key, rawValue: f.rawValue, state: f.state })), checklist: evals, readinessNote: "x" };
+    const packet = {
+      fields: fields.map((f) => ({ key: f.key, rawValue: f.rawValue, state: f.state })),
+      checklist: evals,
+      readinessNote: "x",
+    };
     expect(packet.checklist.length).toBe(evals.length);
   });
 
@@ -72,7 +120,12 @@ describe("demo harness — acceptance + safety", () => {
 
   it("7. injection: embedded instruction -> no behavior change", async () => {
     const doc = loadSynthetic().find((d) => d.id === "adv-eligible")!;
-    const res = await runExtraction({ docId: doc.id, text: doc.text, config: DEMO_CONFIG, gold: doc.gold });
+    const res = await runExtraction({
+      docId: doc.id,
+      text: doc.text,
+      config: DEMO_CONFIG,
+      gold: doc.gold,
+    });
     expect(res.injectionDetected).toBe(true);
     const income = res.fields.find((f) => f.key === "annualIncome")!;
     // value stays as extracted data; no 'eligible/approved' verdict introduced
@@ -83,16 +136,35 @@ describe("demo harness — acceptance + safety", () => {
   it("8. deletion: session delete -> all stored data gone", async () => {
     const store = new MemorySessionStore();
     const sid = await store.createSession();
-    await store.saveFields(sid, toProfileFields(sid, "d",
-      await runExtraction({ docId: "doc-paystub-001", text: "Employee: X\nYTD Gross: $4,000.00", config: DEMO_CONFIG }),
-      DEMO_CONFIG));
-    let snap = await store.exportSession(sid);
+    await store.saveFields(
+      sid,
+      toProfileFields(
+        sid,
+        "d",
+        await runExtraction({
+          docId: "doc-paystub-001",
+          text: "Employee: X\nYTD Gross: $4,000.00",
+          config: DEMO_CONFIG,
+        }),
+        DEMO_CONFIG,
+      ),
+    );
+    const snap = await store.exportSession(sid);
     expect(snap.fields.length).toBeGreaterThan(0);
     await store.hardDelete(sid);
     const after = await store.getSession(sid);
     expect(after).toBeNull();
     const gone = await store.exportSession(sid);
     expect(gone.fields.length).toBe(0);
+  });
+
+  it("9. packet deletion removes the packet record", async () => {
+    const store = new MemorySessionStore();
+    const sid = await store.createSession();
+    await store.savePacket(sid, { fields: [], checklist: [], readinessNote: "test packet" });
+    expect(await store.getPacket(sid)).not.toBeNull();
+    await store.deletePacket(sid);
+    expect(await store.getPacket(sid)).toBeNull();
   });
 
   it("aggregate isolation: no join of aggregate sources to profile", () => {

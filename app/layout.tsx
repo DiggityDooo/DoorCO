@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./globals.css";
+import { GuidedTour } from "@/components/guided-tour";
+import { RealDoorGuide } from "@/components/realdoor-guide";
+import { SiteNav } from "@/components/site-nav";
 
 export const metadata: Metadata = {
   title: "RealDoor — Application-Readiness Copilot",
   description:
-    "Assistive, renter-side copilot for LIHTC application readiness. Never decides eligibility.",
+    "Assistive, renter-side helper for LIHTC application readiness. Never decides eligibility.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -16,25 +20,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <header className="site-header">
           <div className="wrap">
-            <span className="brand">RealDoor</span>
-            <span className="brand-sub">Application-Readiness Copilot · assistive only</span>
-            <nav aria-label="Primary">
-              <a href="/profile">Profile</a>
-              <a href="/understand">Understand</a>
-              <a href="/prepare">Prepare</a>
-              <a href="/transparency">Transparency</a>
-            </nav>
+            <Link className="brand" href="/">
+              RealDoor
+            </Link>
+            <span className="brand-sub">helps you prepare · never decides</span>
+            <SiteNav />
           </div>
         </header>
-        <main id="main" className="wrap">
-          {children}
-        </main>
+        <div className="workspace">
+          <main id="main" className="wrap workspace-main">
+            {children}
+          </main>
+          <RealDoorGuide />
+        </div>
         <footer className="site-footer wrap">
-          <p>
-            RealDoor explains published rules and prepared documents. A qualified human
-            decides eligibility — this tool never does.
-          </p>
+          <p>You confirm. A qualified human decides. RealDoor never approves or denies.</p>
         </footer>
+        <GuidedTour />
       </body>
     </html>
   );

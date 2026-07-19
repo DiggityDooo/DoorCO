@@ -60,8 +60,14 @@ class LocalExtractor implements Extractor {
 function regexExtract(text: string): ExtractedField {
   const out: ExtractedField = {};
   const name = text.match(/Employee:\s*([^\n]+)|Benefit Recipient:\s*([^\n]+)/i);
-  if (name) out.applicantName = { value: (name[1] ?? name[2] ?? "").trim(), evidenceBox: name[0], confidence: 0.9 };
-  const size = text.match(/(\d+)-person household/i) ?? text.match(/Household Size on Record:\s*(\d+)/i);
+  if (name)
+    out.applicantName = {
+      value: (name[1] ?? name[2] ?? "").trim(),
+      evidenceBox: name[0],
+      confidence: 0.9,
+    };
+  const size =
+    text.match(/(\d+)-person household/i) ?? text.match(/Household Size on Record:\s*(\d+)/i);
   if (size) out.householdSize = { value: size[1] ?? "", evidenceBox: size[0], confidence: 0.85 };
   const ytd = text.match(/YTD Gross:\s*\$?([\d,]+\.\d{2})/i);
   if (ytd && ytd[1]) {

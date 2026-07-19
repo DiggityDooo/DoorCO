@@ -25,10 +25,11 @@ export function UnderstandClient({
     });
   }
 
-  async function handleAsk() {
-    if (!question.trim()) return;
+  async function handleAsk(prompt = question) {
+    const normalizedQuestion = prompt.trim();
+    if (!normalizedQuestion) return;
     start(async () => {
-      const res = await askRule(question);
+      const res = await askRule(normalizedQuestion);
       if (res.status === "success") {
         setAnswer(res.data.answer);
         setCitation(res.data.citation ?? null);
@@ -40,13 +41,13 @@ export function UnderstandClient({
     <div>
       <h1>Understand the rule</h1>
       <p className="notice">
-        For <strong>{DEMO_CONFIG.program}</strong> rule year{" "}
-        <strong>{DEMO_CONFIG.ruleYear}</strong>, income is compared against the
-        HUD MTSP limit for your household size at the{" "}
-        <strong>{DEMO_CONFIG.amiThreshold}% AMI</strong> threshold, effective{" "}
-        <strong>{DEMO_CONFIG.effectiveDate}</strong>. The math below uses only your
-        confirmed inputs. This is a readiness signal, not an eligibility decision.
+        <span className="badge info">Pilot</span> For <strong>{DEMO_CONFIG.program}</strong> in{" "}
+        <strong>{DEMO_CONFIG.ruleYear}</strong>, we compare your confirmed income to the published
+        income limit for your household size ({DEMO_CONFIG.amiThreshold}% AMI / MTSP), effective{" "}
+        <strong>{DEMO_CONFIG.effectiveDate}</strong>. That limit is a table fact — not a score. This
+        screen never decides eligibility.
       </p>
+      <p className="notice">You confirm. A qualified human decides.</p>
 
       <div className="card">
         <button className="btn" onClick={handleCalc} disabled={pending}>
@@ -56,8 +57,8 @@ export function UnderstandClient({
           <div style={{ marginTop: "1rem" }}>
             {result.abstained ? (
               <p className="error">
-                Cannot compute yet: {result.abstainReason} Confirm your household
-                size and annual income in Profile first.
+                Cannot compute yet: {result.abstainReason} Confirm your household size and annual
+                income in Profile first.
               </p>
             ) : (
               <>
@@ -69,7 +70,10 @@ export function UnderstandClient({
                 </p>
                 <ul className="plain">
                   <li>Confirmed household size: {result.inputRefs.householdSize}</li>
-                  <li>Confirmed annual income: ${Number(result.inputRefs.annualIncome).toLocaleString()}</li>
+                  <li>
+                    Confirmed annual income: $
+                    {Number(result.inputRefs.annualIncome).toLocaleString()}
+                  </li>
                   <li>
                     {DEMO_CONFIG.amiThreshold}% AMI limit ({result.inputRefs.householdSize}-person):
                     ${result.threshold.toLocaleString()}
@@ -94,7 +98,9 @@ export function UnderstandClient({
       </div>
 
       <h2>Ask about the rules</h2>
-      <label className="label" htmlFor="q">Your question</label>
+      <label className="label" htmlFor="q">
+        Your question
+      </label>
       <input
         id="q"
         className="input"
@@ -103,7 +109,7 @@ export function UnderstandClient({
         placeholder="e.g. How is the income limit determined?"
       />
       <p style={{ marginTop: "0.5rem" }}>
-        <button className="btn secondary" onClick={handleAsk} disabled={pending}>
+        <button className="btn secondary" onClick={() => void handleAsk()} disabled={pending}>
           Ask
         </button>
       </p>
@@ -122,7 +128,7 @@ export function UnderstandClient({
               className="btn secondary"
               onClick={() => {
                 setQuestion(q.question);
-                handleAsk();
+                void handleAsk(q.question);
               }}
             >
               {q.question}

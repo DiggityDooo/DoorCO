@@ -155,6 +155,10 @@ export class PrismaSessionStore implements SessionStore {
     return row ? (JSON.parse(str(row.payload, "null")) as PacketPayload) : null;
   }
 
+  async deletePacket(sessionId: string) {
+    await prisma.packet.deleteMany({ where: { sessionId } });
+  }
+
   async exportSession(sessionId: string) {
     const [fields, results, audit, packet] = await Promise.all([
       this.getFields(sessionId),
